@@ -262,6 +262,28 @@ def _extract_caste_constraints(text: str) -> List[str]:
     return tags
 
 
+_AGE_KEYWORD_RULES = [
+    ({"children", "child", "minor", "below 18"}, None, 18),
+    ({"student", "scholarship", "pursuing"}, 18, 30),
+    ({"youth", "young adult", "unemployed youth"}, 18, 30),
+    ({"graduate", "post graduate", "post-graduate", "degree holder", "bachelor"}, 21, None),
+    ({"intermediate", "plus two", "higher secondary", "12th"}, 17, None),
+    ({"senior citizen", "elderly", "old age", "super senior"}, 60, None),
+    ({"widow", "widowed"}, 18, None),
+    ({"farmer", "agricultur", "cultivator"}, 18, 60),
+    ({"construction worker", "labourer", "laborer"}, 18, 60),
+    ({"ex-serviceman", "ex serviceman", "retired"}, 18, 60),
+]
+
+
+def _infer_age_from_keywords(text: str) -> Dict[str, Any]:
+    lowered = text.lower()
+    for keywords, min_age, max_age in _AGE_KEYWORD_RULES:
+        if any(kw in lowered for kw in keywords):
+            return {"min_age": min_age, "max_age": max_age}
+    return {"min_age": None, "max_age": None}
+
+
 def _derive_eligibility_metadata(record: Dict[str, Any]) -> Dict[str, Any]:
     eligibility_text = _clean_text(record.get("eligibility"))
     combined_text = " ".join(
@@ -275,6 +297,10 @@ def _derive_eligibility_metadata(record: Dict[str, Any]) -> Dict[str, Any]:
     )
 
     age = _extract_age_bounds(combined_text)
+
+    if age["min_age"] is None and age["max_age"] is None:
+        age = _infer_age_from_keywords(combined_text)
+
     return {
         "eligibility_text": eligibility_text,
         "eligibility_min_age": age["min_age"],

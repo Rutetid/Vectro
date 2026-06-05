@@ -337,12 +337,25 @@ def _build_context_chunks(
     chunks: Sequence[Dict[str, Any]],
     fused_scores: Dict[int, float],
     max_chunks: int = 8,
+    max_per_scheme: int = 2,
 ) -> List[Dict[str, Any]]:
     ranked = sorted(
         fused_scores.keys(), key=lambda idx: fused_scores[idx], reverse=True
-    )[:max_chunks]
+    )
+    scheme_count: Dict[str, int] = {}
+    selected: List[int] = []
+    for idx in ranked:
+        scheme_id = chunks[idx].get("scheme_id", "")
+        count = scheme_count.get(scheme_id, 0)
+        if count >= max_per_scheme:
+            continue
+        scheme_count[scheme_id] = count + 1
+        selected.append(idx)
+        if len(selected) >= max_chunks:
+            break
+
     context: List[Dict[str, Any]] = []
-    for i, idx in enumerate(ranked, start=1):
+    for i, idx in enumerate(selected, start=1):
         chunk = chunks[idx]
         label = f"CHUNK-{i}"
         context.append(
