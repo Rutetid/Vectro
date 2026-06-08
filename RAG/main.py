@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 
 from chatbot.retrieve import DEFAULT_MODEL_NAME, load_artifacts, retrieve_hybrid
+from chatbot.generate import generate_schemes_response
 
 # Load retrieval artifacts lazily to reduce startup memory
 artifacts = None
@@ -108,21 +109,18 @@ def find_schemes(user: UserProfile):
                 "query": question,
                 "total_schemes": 0,
                 "meta": search_output["meta"],
-                "assistant_instructions": search_output["assistant_instructions"],
                 "context_chunks": search_output["context_chunks"],
-                "grounded_answer": search_output["grounded_answer"],
-                "message": "No government schemes found matching the user profile.",
+                "answer": "No government schemes found matching the user profile.",
+                "schemes": [],
             }
 
-        return {
-            "query": question,
-            "total_schemes": search_output["total_schemes"],
-            "meta": search_output["meta"],
-            "assistant_instructions": search_output["assistant_instructions"],
-            "grounded_answer": search_output["grounded_answer"],
-            "context_chunks": search_output["context_chunks"],
-            "results": search_output["results"],
-        }
+        profile_dict = user.model_dump()
+        response = generate_schemes_response(
+            retrieval_result=search_output,
+            user_profile=profile_dict,
+        )
+
+        return response
 
     except Exception as e:
         return {"error": "Internal processing error", "details": str(e)}

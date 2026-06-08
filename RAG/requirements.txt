@@ -8,3 +8,5 @@ faiss-cpu
 pydantic
 numpy
 rank-bm25
+openai
+python-dotenv
