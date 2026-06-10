@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ArrowRight, ArrowLeft, Sparkles, User, Calendar, MapPin, Home, Briefcase, IndianRupee, Users, CheckCircle2, Info, ExternalLink, ShieldCheck, FileText, Search, Landmark, Target } from 'lucide-react'
 import { motion as Motion, AnimatePresence } from 'motion/react'
 import { z } from 'zod'
+import ReactMarkdown from 'react-markdown'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import Navbar from '@/components/Navbar'
+import { schemeAPI } from '@/lib/api'
 import { Link } from 'react-router-dom'
 
 const formSchema = z.object({
@@ -52,6 +54,7 @@ const DiscoverPage = ({ language, setLanguage }) => {
   const [loading, setLoading] = useState(false)
   const [schemes, setSchemes] = useState([])
   const [showResults, setShowResults] = useState(false)
+  const [aiAnswer, setAiAnswer] = useState('')
 
   const content = {
     en: {
@@ -333,67 +336,6 @@ const DiscoverPage = ({ language, setLanguage }) => {
     }
   }
 
-  const parseSchemeText = (schemeText) => {
-    const lines = schemeText.split('\n').filter(line => line.trim())
-    const scheme = {}
-    
-    lines.forEach(line => {
-      if (line.includes('Scheme_ID:')) {
-        scheme.id = line.split('Scheme_ID:')[1].trim()
-      } else if (line.includes('Scheme_Name:')) {
-        scheme.name = line.split('Scheme_Name:')[1].trim()
-      } else if (line.includes('Category:')) {
-        scheme.category = line.split('Category:')[1].trim()
-      } else if (line.includes('Eligibility:')) {
-        const eligibilityRaw = line.split('Eligibility:')[1].trim()
-        // Parse Python dict format to readable text
-        try {
-          // Replace Python-style dict with JSON
-          const jsonStr = eligibilityRaw
-            .replace(/'/g, '"')
-            .replace(/True/g, 'true')
-            .replace(/False/g, 'false')
-          const eligibilityObj = JSON.parse(jsonStr)
-          
-          // Convert to readable format
-          const parts = []
-          if (eligibilityObj.min_age) parts.push(`Age ${eligibilityObj.min_age}+`)
-          if (eligibilityObj.max_age) parts.push(`up to ${eligibilityObj.max_age} years`)
-          if (eligibilityObj.gender && eligibilityObj.gender !== 'Any') parts.push(eligibilityObj.gender)
-          if (eligibilityObj.occupation) parts.push(eligibilityObj.occupation)
-          if (eligibilityObj.max_income) parts.push(`Income under ₹${(eligibilityObj.max_income / 100000).toFixed(1)}L`)
-          if (eligibilityObj.category_allowed) {
-            parts.push(`Categories: ${eligibilityObj.category_allowed.join(', ')}`)
-          }
-          if (eligibilityObj.land_required) parts.push('Land ownership required')
-          
-          scheme.eligibility = parts.join(' • ')
-        } catch {
-          // If parsing fails, use raw text
-          scheme.eligibility = eligibilityRaw
-        }
-      } else if (line.includes('Benefits:')) {
-        scheme.benefits = line.split('Benefits:')[1].trim()
-      } else if (line.includes('Documents:')) {
-        const docsRaw = line.split('Documents:')[1].trim()
-        // Parse array format
-        try {
-          const jsonStr = docsRaw.replace(/'/g, '"')
-          const docsArray = JSON.parse(jsonStr)
-          scheme.documents = docsArray.join(', ')
-        } catch {
-          scheme.documents = docsRaw
-        }
-      } else if (line.includes('State:')) {
-        scheme.state = line.split('State:')[1].trim()
-      } else if (line.includes('Description:')) {
-        scheme.description = line.split('Description:')[1].trim()
-      }
-    })
-    
-    return scheme
-  }
-
   const handleSubmit = async () => {
     try {
       const validatedData = formSchema.parse(formData)
@@ -401,81 +343,66 @@ const DiscoverPage = ({ language, setLanguage }) => {
       
       setLoading(true)
       setShowResults(false)
-      
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Mock data selection based on occupation
-      const mockData = {
-        student: {
-          "query": "Find government schemes for 21 year old student obc male in bihar with income under 100000",
-          "total_schemes": 5,
-          "results": [
-            {
-              "index": 1,
-              "scheme_text": "\n    Scheme_ID: DDUGKY15\n    Scheme_Name: Deen Dayal Upadhyaya Grameen Kaushalya Yojana (DDU-GKY)\n    Category: Skill Development\n    Eligibility: {'min_age': 15, 'max_age': 35, 'category_allowed': ['SC', 'ST', 'OBC', 'BPL']}\n    Benefits: Skill training and placement for rural youth\n    Documents: ['Aadhaar Card', 'Rural Residence Proof']\n    State: All\n    Description: This scheme provides skill training and job placement for rural youth.\n    ",
-              "relevance_score": 0.8173279166221619
-            },
-            {
-              "index": 2,
-              "scheme_text": "\n    Scheme_ID: MGNREGA06\n    Scheme_Name: Mahatma Gandhi National Rural Employment Guarantee Act (MGNREGA)\n    Category: Employment\n    Eligibility: {'min_age': 18, 'gender': 'Any'}\n    Benefits: Guaranteed 100 days of wage employment in rural areas\n    Documents: ['Aadhaar Card', 'Job Card', 'Bank Account Details']\n    State: All\n    Description: This scheme provides guaranteed employment to rural households for livelihood support.\n    ",
-              "relevance_score": 0.8407395482063293
-            },
-            {
-              "index": 3,
-              "scheme_text": "\n    Scheme_ID: PMKISAN03\n    Scheme_Name: Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)\n    Category: Agriculture\n    Eligibility: {'min_age': 18, 'occupation': 'Farmer', 'land_required': True}\n    Benefits: ₹6000 per year financial support to farmers\n    Documents: ['Aadhaar Card', 'Land Ownership Documents', 'Bank Account Details']\n    State: All\n    Description: The government gives farmers ₹6000 every year to help with farming expenses.\n    ",
-              "relevance_score": 0.9491934776306152
-            },
-            {
-              "index": 4,
-              "scheme_text": "\n    Scheme_ID: PMAY01\n    Scheme_Name: Pradhan Mantri Awas Yojana (PMAY)\n    Category: Housing\n    Eligibility: {'min_age': 18, 'max_income': 300000, 'gender': 'Any', 'category_allowed': ['SC', 'ST', 'OBC', 'General']}\n    Benefits: Financial assistance for building or buying a pucca house\n    Documents: ['Aadhaar Card', 'Income Certificate', 'Bank Account Details']\n    State: All\n    Description: The government helps eligible citizens to build or buy a house by giving financial support.\n    ",
-              "relevance_score": 0.9518991112709045
-            },
-            {
-              "index": 5,
-              "scheme_text": "\n    Scheme_ID: PMKVY12\n    Scheme_Name: Pradhan Mantri Kaushal Vikas Yojana (PMKVY)\n    Category: Skill Development\n    Eligibility: {'min_age': 15, 'max_age': 45}\n    Benefits: Free skill training and certification\n    Documents: ['Aadhaar Card', 'Education Certificate']\n    State: All\n    Description: This scheme helps youth learn new skills and improve job opportunities.\n    ",
-              "relevance_score": 0.9574979543685913
-            }
-          ]
-        },
-        agriculture: {
-          "query": "Find government schemes for 35 year old agriculture sc male in bihar with income under 150000",
-          "total_schemes": 4,
-          "results": [
-            {
-              "index": 1,
-              "scheme_text": "\n    Scheme_ID: PMKISAN03\n    Scheme_Name: Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)\n    Category: Agriculture\n    Eligibility: {'min_age': 18, 'occupation': 'Farmer', 'land_required': True}\n    Benefits: ₹6000 per year financial support to farmers\n    Documents: ['Aadhaar Card', 'Land Ownership Documents', 'Bank Account Details']\n    State: All\n    Description: The government gives farmers ₹6000 every year to help with farming expenses.\n    ",
-              "relevance_score": 0.8087407350540161
-            },
-            {
-              "index": 2,
-              "scheme_text": "\n    Scheme_ID: MGNREGA06\n    Scheme_Name: Mahatma Gandhi National Rural Employment Guarantee Act (MGNREGA)\n    Category: Employment\n    Eligibility: {'min_age': 18, 'gender': 'Any'}\n    Benefits: Guaranteed 100 days of wage employment in rural areas\n    Documents: ['Aadhaar Card', 'Job Card', 'Bank Account Details']\n    State: All\n    Description: This scheme provides guaranteed employment to rural households for livelihood support.\n    ",
-              "relevance_score": 0.8354548811912537
-            },
-            {
-              "index": 3,
-              "scheme_text": "\n    Scheme_ID: DDUGKY15\n    Scheme_Name: Deen Dayal Upadhyaya Grameen Kaushalya Yojana (DDU-GKY)\n    Category: Skill Development\n    Eligibility: {'min_age': 15, 'max_age': 35, 'category_allowed': ['SC', 'ST', 'OBC', 'BPL']}\n    Benefits: Skill training and placement for rural youth\n    Documents: ['Aadhaar Card', 'Rural Residence Proof']\n    State: All\n    Description: This scheme provides skill training and job placement for rural youth.\n    ",
-              "relevance_score": 0.8598265647888184
-            },
-            {
-              "index": 4,
-              "scheme_text": "\n    Scheme_ID: PMAY01\n    Scheme_Name: Pradhan Mantri Awas Yojana (PMAY)\n    Category: Housing\n    Eligibility: {'min_age': 18, 'max_income': 300000, 'gender': 'Any', 'category_allowed': ['SC', 'ST', 'OBC', 'General']}\n    Benefits: Financial assistance for building or buying a pucca house\n    Documents: ['Aadhaar Card', 'Income Certificate', 'Bank Account Details']\n    State: All\n    Description: The government helps eligible citizens to build or buy a house by giving financial support.\n    ",
-              "relevance_score": 0.9989012479782104
-            }
-          ]
-        }
+      setAiAnswer('')
+
+      // Build profile for API
+      const stateLabel = steps[2].options.find(o => o.value === validatedData.state)?.label || validatedData.state
+      const profilePayload = {
+        age: parseInt(validatedData.age),
+        gender: validatedData.gender,
+        income: validatedData.income,
+        state: stateLabel,
+        occupation: validatedData.occupation,
+        category: validatedData.category,
+        residence: validatedData.residence,
       }
-      
-      const response = mockData[validatedData.occupation] || mockData.student
-      
-      const parsedSchemes = response.results.map(result => ({
-        ...parseSchemeText(result.scheme_text),
-        relevanceScore: result.relevance_score
-      }))
-      
-      setSchemes(parsedSchemes)
+
+      let response
+      try {
+        response = await schemeAPI.discover(profilePayload)
+      } catch (apiError) {
+        console.warn('RAG API unavailable, using mock data:', apiError.message)
+        response = null
+      }
+
+      if (response && response.schemes && response.schemes.length > 0) {
+        // Real API success
+        setSchemes(response.schemes)
+        setAiAnswer(response.answer || '')
+      } else {
+        // Fallback to mock data
+        const mockData = {
+          student: {
+            "query": "Find government schemes for 21 year old student obc male in bihar with income under 100000",
+            "total_schemes": 5,
+            "schemes": [
+              { id: 'DDUGKY15', name: 'Deen Dayal Upadhyaya Grameen Kaushalya Yojana (DDU-GKY)', category: 'Skill Development', state: 'All India', description: 'Skill training and placement for rural youth.', eligibility: 'Age 15-35, SC/ST/OBC/BPL', benefits: 'Skill training and placement for rural youth', documents: 'Aadhaar Card, Rural Residence Proof', relevanceScore: 0.18, officialWebsite: 'https://www.myscheme.gov.in/schemes/ddugky' },
+              { id: 'MGNREGA06', name: 'Mahatma Gandhi National Rural Employment Guarantee Act (MGNREGA)', category: 'Employment', state: 'All India', description: 'Guaranteed 100 days of wage employment in rural areas.', eligibility: 'Age 18+, Any gender', benefits: 'Guaranteed 100 days of wage employment', documents: 'Aadhaar Card, Job Card, Bank Account Details', relevanceScore: 0.16, officialWebsite: 'https://www.myscheme.gov.in/schemes/mgnrega' },
+              { id: 'PMKISAN03', name: 'Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)', category: 'Agriculture', state: 'All India', description: '₹6000 per year financial support to farmers.', eligibility: 'Age 18+, Farmer, Land required', benefits: '₹6000 per year financial support to farmers', documents: 'Aadhaar Card, Land Ownership Documents, Bank Account Details', relevanceScore: 0.05, officialWebsite: 'https://www.myscheme.gov.in/schemes/pm-kisan' },
+              { id: 'PMAY01', name: 'Pradhan Mantri Awas Yojana (PMAY)', category: 'Housing', state: 'All India', description: 'Financial assistance for building or buying a pucca house.', eligibility: 'Age 18+, Income under ₹3L, Any gender', benefits: 'Financial assistance for building or buying a pucca house', documents: 'Aadhaar Card, Income Certificate, Bank Account Details', relevanceScore: 0.05, officialWebsite: 'https://www.myscheme.gov.in/schemes/pmay' },
+              { id: 'PMKVY12', name: 'Pradhan Mantri Kaushal Vikas Yojana (PMKVY)', category: 'Skill Development', state: 'All India', description: 'Free skill training and certification.', eligibility: 'Age 15-45', benefits: 'Free skill training and certification', documents: 'Aadhaar Card, Education Certificate', relevanceScore: 0.04, officialWebsite: 'https://www.myscheme.gov.in/schemes/pmkvy' },
+            ]
+          },
+          agriculture: {
+            "query": "Find government schemes for 35 year old agriculture sc male in bihar with income under 150000",
+            "total_schemes": 4,
+            "schemes": [
+              { id: 'PMKISAN03', name: 'Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)', category: 'Agriculture', state: 'All India', description: '₹6000 per year financial support to farmers.', eligibility: 'Age 18+, Farmer, Land required', benefits: '₹6000 per year financial support to farmers', documents: 'Aadhaar Card, Land Ownership Documents, Bank Account Details', relevanceScore: 0.19, officialWebsite: 'https://www.myscheme.gov.in/schemes/pm-kisan' },
+              { id: 'MGNREGA06', name: 'Mahatma Gandhi National Rural Employment Guarantee Act (MGNREGA)', category: 'Employment', state: 'All India', description: 'Guaranteed 100 days of wage employment in rural areas.', eligibility: 'Age 18+, Any gender', benefits: 'Guaranteed 100 days of wage employment', documents: 'Aadhaar Card, Job Card, Bank Account Details', relevanceScore: 0.16, officialWebsite: 'https://www.myscheme.gov.in/schemes/mgnrega' },
+              { id: 'DDUGKY15', name: 'Deen Dayal Upadhyaya Grameen Kaushalya Yojana (DDU-GKY)', category: 'Skill Development', state: 'All India', description: 'Skill training and placement for rural youth.', eligibility: 'Age 15-35, SC/ST/OBC/BPL', benefits: 'Skill training and placement for rural youth', documents: 'Aadhaar Card, Rural Residence Proof', relevanceScore: 0.14, officialWebsite: 'https://www.myscheme.gov.in/schemes/ddugky' },
+              { id: 'PMAY01', name: 'Pradhan Mantri Awas Yojana (PMAY)', category: 'Housing', state: 'All India', description: 'Financial assistance for building or buying a pucca house.', eligibility: 'Age 18+, Income under ₹3L, Any gender', benefits: 'Financial assistance for building or buying a pucca house', documents: 'Aadhaar Card, Income Certificate, Bank Account Details', relevanceScore: 0.001, officialWebsite: 'https://www.myscheme.gov.in/schemes/pmay' },
+            ]
+          }
+        }
+
+        const fallback = mockData[validatedData.occupation] || mockData.student
+        setSchemes(fallback.schemes)
+        setAiAnswer('')
+      }
+
       setShowResults(true)
       setLoading(false)
-      
+
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors = {}
@@ -497,6 +424,7 @@ const DiscoverPage = ({ language, setLanguage }) => {
   const handleStartOver = () => {
     setShowResults(false)
     setSchemes([])
+    setAiAnswer('')
     setCurrentStep(0)
     setFormData({
       gender: '',
@@ -519,7 +447,7 @@ const DiscoverPage = ({ language, setLanguage }) => {
   const resultHighlights = [
     { label: language === 'en' ? 'RAG ranked' : 'RAG रैंकिंग', value: schemes.length, iconElement: <Sparkles className="mb-3 h-5 w-5 text-emerald-300" /> },
     { label: language === 'en' ? 'Documents mapped' : 'दस्तावेज मैप', value: schemes.filter((scheme) => scheme.documents).length, iconElement: <FileText className="mb-3 h-5 w-5 text-emerald-300" /> },
-    { label: language === 'en' ? 'All India coverage' : 'भारत कवरेज', value: schemes.filter((scheme) => scheme.state === 'All').length, iconElement: <Landmark className="mb-3 h-5 w-5 text-emerald-300" /> },
+    { label: language === 'en' ? 'All India coverage' : 'भारत कवरेज', value: schemes.filter((scheme) => !scheme.state || scheme.state === 'All' || scheme.state === 'All India').length, iconElement: <Landmark className="mb-3 h-5 w-5 text-emerald-300" /> },
   ]
 
   // Loading screen
@@ -615,6 +543,26 @@ const DiscoverPage = ({ language, setLanguage }) => {
             </div>
           </Motion.div>
 
+          {/* AI Generated Summary Banner */}
+          {aiAnswer && (
+            <Motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mb-6 rounded-lg border border-emerald-300/20 bg-emerald-300/5 p-5 backdrop-blur-xl sm:p-6"
+            >
+              <div className="mb-3 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-emerald-300" />
+                <h3 className="text-sm font-semibold text-emerald-100">
+                  {language === 'en' ? 'AI Analysis' : 'AI विश्लेषण'}
+                </h3>
+              </div>
+              <div className="prose prose-invert prose-sm max-w-none text-emerald-50/80 leading-7">
+                <ReactMarkdown>{aiAnswer}</ReactMarkdown>
+              </div>
+            </Motion.div>
+          )}
+
           {/* Schemes Grid */}
           <div className="mb-6 grid gap-4 sm:mb-8 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence>
@@ -658,7 +606,7 @@ const DiscoverPage = ({ language, setLanguage }) => {
                       </p>
 
                       {/* Eligibility */}
-                      {scheme.eligibility && (
+                      {scheme.eligibility ? (
                         <div className="mb-3 rounded-md border border-white/10 bg-black/18 p-3">
                           <div className="flex items-start gap-2 text-sm">
                             <User className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
@@ -668,20 +616,30 @@ const DiscoverPage = ({ language, setLanguage }) => {
                             </div>
                           </div>
                         </div>
-                      )}
+                      ) : scheme.matchedSections && scheme.matchedSections.length > 0 ? (
+                        <div className="mb-3 rounded-md border border-white/10 bg-black/18 p-3">
+                          <div className="flex items-start gap-2 text-sm">
+                            <User className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+                            <div>
+                              <p className="mb-1 text-xs font-medium text-white">Matched Sections</p>
+                              <p className="line-clamp-2 text-xs leading-5 text-emerald-50/65">{scheme.matchedSections.join(', ')}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
 
                       {/* Benefits */}
-                      {scheme.benefits && (
+                      {scheme.benefits ? (
                         <div className="mb-3">
                           <div className="flex items-start gap-2 text-sm">
                             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
                             <p className="line-clamp-2 text-sm leading-5 text-emerald-50/75">{scheme.benefits}</p>
                           </div>
                         </div>
-                      )}
+                      ) : null}
 
                       {/* Documents Required */}
-                      {scheme.documents && (
+                      {scheme.documents ? (
                         <div className="mb-4">
                           <div className="flex items-start gap-2 text-sm">
                             <Info className="mt-0.5 h-4 w-4 shrink-0 text-sky-300" />
@@ -690,7 +648,7 @@ const DiscoverPage = ({ language, setLanguage }) => {
                             </p>
                           </div>
                         </div>
-                      )}
+                      ) : null}
 
                       {/* Spacer to push button to bottom */}
                       <div className="grow"></div>

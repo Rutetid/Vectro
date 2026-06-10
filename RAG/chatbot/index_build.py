@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 import faiss
 import numpy as np
-from langchain_huggingface import HuggingFaceEmbeddings
+from sentence_transformers import SentenceTransformer
 
 from chatbot.ingest import (
     build_chunk_corpus,
@@ -47,18 +47,19 @@ def build_indexes(
     if not chunks:
         raise ValueError("No chunks were generated from the provided dataset")
 
+    # Filter out FAQ chunks
+    chunks = [c for c in chunks if c.get("section") != "faq"]
+    if not chunks:
+        raise ValueError("No non-FAQ chunks were generated from the provided dataset")
+
     texts = [chunk["text"] for chunk in chunks]
     tokenized_corpus = [tokenize_for_bm25(text) for text in texts]
 
-    embeddings = HuggingFaceEmbeddings(
-        model_name=model_name,
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True, "batch_size": batch_size},
+    model = SentenceTransformer(model_name, device="cpu")
+    vectors = model.encode(
+        texts, normalize_embeddings=True, batch_size=batch_size, show_progress_bar=True
     )
-
-    vectors = np.array(embeddings.embed_documents(texts), dtype=np.float32)
-    norms = np.linalg.norm(vectors, axis=1, keepdims=True)
-    vectors = vectors / np.clip(norms, 1e-12, None)
+    vectors = np.array(vectors, dtype=np.float32)
 
     index = faiss.IndexFlatIP(vectors.shape[1])
     index.add(vectors)

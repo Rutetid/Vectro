@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html as html_mod
 import json
 import re
 from pathlib import Path
@@ -19,6 +20,7 @@ def _clean_text(value: Any) -> str:
         value = "; ".join(f"{k}: {v}" for k, v in value.items())
 
     text = str(value).replace("\r", " ").replace("\n", " ")
+    text = html_mod.unescape(text)
     text = re.sub(r"\s+", " ", text).strip()
     return text
 

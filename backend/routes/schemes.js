@@ -21,6 +21,9 @@ router.post('/discover', optionalAuth, async (req, res) => {
       occupation
     } = req.body;
 
+    console.log('\n--- DISCOVER REQUEST ---');
+    console.log('Profile received:', { age, gender, state, residence, category, income, occupation });
+
     // Validate required fields
     if (!age || !state || !residence || !category || !income || !occupation) {
       return res.status(400).json({ 
@@ -40,8 +43,17 @@ router.post('/discover', optionalAuth, async (req, res) => {
       residency: residence // RAG uses 'residency' field
     };
 
+    console.log('Sending to RAG:', userProfile);
+    console.log('RAG URL:', process.env.RAG_SERVICE_URL || 'http://localhost:8000');
+
     // Call RAG service to find matching schemes
     const ragResponse = await ragClient.post('/find-schemes', userProfile);
+
+    console.log('RAG response status:', ragResponse.status);
+    console.log('RAG response keys:', Object.keys(ragResponse.data || {}));
+    console.log('Schemes returned:', ragResponse.data?.schemes?.length || 0);
+    console.log('Has answer:', !!ragResponse.data?.answer);
+    console.log('--- END DISCOVER ---\n');
 
     if (!ragResponse.data) {
       return res.status(500).json({ 
@@ -50,36 +62,51 @@ router.post('/discover', optionalAuth, async (req, res) => {
       });
     }
 
-    // Get scheme IDs from RAG response and fetch detailed info from database
-    const schemeTexts = ragResponse.data.results.map(r => r.scheme_text);
-    
-    // For now, return RAG results directly
-    // TODO: Map RAG results to database schemes for complete information
-    const schemes = ragResponse.data.results.map((result, index) => ({
-      id: index + 1,
-      schemeText: result.scheme_text,
-      relevanceScore: result.relevance_score,
-      // Parse scheme name from the text (first line usually contains the name)
-      name: result.scheme_text.split('\n')[0].trim(),
+    const ragData = ragResponse.data;
+
+    // Map RAG response to frontend format
+    const schemes = (ragData.schemes || []).map((scheme, index) => ({
+      id: scheme.scheme_id || `scheme_${index + 1}`,
+      name: scheme.scheme_name || 'Government Scheme',
+      category: scheme.level || (scheme.categories && scheme.categories[0]) || 'General',
+      state: scheme.state || 'All India',
+      description: scheme.evidence || '',
+      eligibility: null, // Not available as structured field — shown via AI summary
+      benefits: null,    // Not available as structured field — shown via AI summary
+      documents: null,   // Not available as structured field — shown via AI summary
+      relevanceScore: scheme.score || 0,
+      officialWebsite: (scheme.citations && scheme.citations[0]?.source_url) || '',
+      matchedSections: scheme.matched_sections || [],
+      citations: scheme.citations || [],
     }));
 
     // If user is authenticated, optionally save the search
     if (req.user) {
-      // TODO: Save search history to database
       console.log(`User ${req.user.id} discovered ${schemes.length} schemes`);
     }
 
     res.json({
-      message: 'Schemes discovered successfully',
-      totalSchemes: ragResponse.data.total_schemes,
+      answer: ragData.answer || '',
+      totalSchemes: schemes.length,
       schemes: schemes,
-      query: ragResponse.data.query
+      query: ragData.query || '',
+      meta: ragData.meta || {},
     });
   } catch (error) {
-    console.error('Discover schemes error:', error);
+    console.error('\n--- DISCOVER ERROR ---');
+    console.error('Error type:', error.code || error.name);
+    console.error('Error message:', error.message);
+    if (error.response) {
+      console.error('RAG responded with status:', error.response.status);
+      console.error('RAG response data:', error.response.data);
+    } else if (error.code === 'ECONNREFUSED') {
+      console.error('RAG service is not running at', process.env.RAG_SERVICE_URL || 'http://localhost:8000');
+    } else {
+      console.error('Full error:', error);
+    }
+    console.error('--- END DISCOVER ERROR ---\n');
     
     if (error.response) {
-      // RAG service returned an error
       return res.status(error.response.status || 500).json({ 
         error: 'RAG service error',
         message: error.response.data?.detail || 'Failed to discover schemes' 

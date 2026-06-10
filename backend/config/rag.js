@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const RAG_BASE_URL = process.env.RAG_SERVICE_URL || 'http://localhost:7860';
+const RAG_BASE_URL = process.env.RAG_SERVICE_URL || 'http://localhost:8000';
 
 // Create axios instance for RAG service
 const ragClient = axios.create({
