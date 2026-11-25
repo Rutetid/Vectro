@@ -1,13 +1,13 @@
 # Vectro RAG API
 
-Government scheme discovery using semantic search with FAISS and sentence-transformers.
+Government scheme discovery using hybrid retrieval (ChromaDB vector search + BM25) with grounded LLM answers.
 
 ## Features
 
-- 🔍 Semantic search through government schemes
-- 🚀 Fast FAISS vector database
-- 🎯 Personalized recommendations based on user profile
-- 📊 Relevance scoring
+- 🔍 Hybrid search: ChromaDB semantic vectors + BM25 lexical ranking (RRF fusion)
+- 🗂️ Persistent ChromaDB index (`chatbot/chroma_index/chroma_db`)
+- 🎯 Metadata-aware filtering (state/category/age/income/gender/caste/residency)
+- 🧾 Grounded answer generation with source citations
 
 ## API Endpoints
 
@@ -49,6 +49,13 @@ Find relevant government schemes based on user profile.
 
 ```bash
 pip install -r requirements.txt
+
+# Build index (small smoke test)
+python -m chatbot.index_build --data chatbot/rag_data_100.jsonl --output chatbot/chroma_index --limit 100
+
+# Full index
+# python -m chatbot.index_build --data chatbot/rag_data.jsonl --output chatbot/chroma_index
+
 uvicorn main:app --reload --port 7860
 ```
 
@@ -75,6 +82,7 @@ railway up
 ## Tech Stack
 
 - FastAPI
-- FAISS (vector database)
+- ChromaDB (persistent vector database)
+- BM25 (`rank-bm25`) + Reciprocal Rank Fusion
 - sentence-transformers
-- LangChain
+- OpenRouter/OpenAI SDK for generation

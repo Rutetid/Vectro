@@ -6,7 +6,7 @@ import pickle
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import faiss
+import chromadb
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
@@ -19,6 +19,7 @@ from chatbot.ingest import (
 
 
 DEFAULT_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+DEFAULT_COLLECTION_NAME = "schemes_chunks"
 
 
 def create_sample_dataset(
@@ -29,6 +30,34 @@ def create_sample_dataset(
     return len(rows)
 
 
+def _flatten_metadata(meta: Dict[str, Any]) -> Dict[str, Any]:
+    flat: Dict[str, Any] = {}
+    for key, value in (meta or {}).items():
+        if isinstance(value, list):
+            flat[key] = ",".join(str(item) for item in value)
+        elif isinstance(value, (str, int, float, bool)) or value is None:
+            flat[key] = "" if value is None else value
+        else:
+            flat[key] = json.dumps(value, ensure_ascii=False)
+    return flat
+
+
+def _upsert_chroma_batches(
+    collection: Any,
+    chunks: List[Dict[str, Any]],
+    vectors: np.ndarray,
+    upsert_batch_size: int = 256,
+) -> None:
+    for start in range(0, len(chunks), upsert_batch_size):
+        batch = chunks[start : start + upsert_batch_size]
+        collection.upsert(
+            ids=[chunk["chunk_id"] for chunk in batch],
+            documents=[chunk["text"] for chunk in batch],
+            embeddings=vectors[start : start + len(batch)].tolist(),
+            metadatas=[_flatten_metadata(chunk.get("metadata", {})) for chunk in batch],
+        )
+
+
 def build_indexes(
     data_path: Path,
     output_dir: Path,
@@ -37,6 +66,7 @@ def build_indexes(
     max_words: int = 380,
     overlap_words: int = 70,
     batch_size: int = 32,
+    collection_name: str = DEFAULT_COLLECTION_NAME,
 ) -> Dict[str, Any]:
     chunks = build_chunk_corpus(
         data_path=data_path,
@@ -61,33 +91,40 @@ def build_indexes(
     )
     vectors = np.array(vectors, dtype=np.float32)
 
-    index = faiss.IndexFlatIP(vectors.shape[1])
-    index.add(vectors)
-
     output_dir.mkdir(parents=True, exist_ok=True)
+    chroma_dir = output_dir / "chroma_db"
+    chroma_dir.mkdir(parents=True, exist_ok=True)
+
+    client = chromadb.PersistentClient(path=str(chroma_dir))
+    try:
+        client.delete_collection(collection_name)
+    except Exception:
+        pass
+    collection = client.get_or_create_collection(
+        name=collection_name,
+        metadata={"hnsw:space": "cosine"},
+    )
+    _upsert_chroma_batches(collection, chunks, vectors)
 
     sidecar_path = output_dir / "chunks.jsonl"
     with sidecar_path.open("w", encoding="utf-8") as handle:
         for row in chunks:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
-    faiss.write_index(index, str(output_dir / "faiss.index"))
-    np.save(output_dir / "vectors.npy", vectors)
-
     with (output_dir / "bm25_tokens.pkl").open("wb") as handle:
         pickle.dump(tokenized_corpus, handle)
 
     manifest = {
         "data_path": str(data_path),
-        "index_type": "IndexFlatIP",
+        "index_type": "chroma+bm25",
         "embedding_model": model_name,
         "total_chunks": len(chunks),
         "max_words": max_words,
         "overlap_words": overlap_words,
         "batch_size": batch_size,
+        "collection_name": collection_name,
         "files": {
-            "faiss": "faiss.index",
-            "vectors": "vectors.npy",
+            "chroma_db": "chroma_db",
             "chunks": "chunks.jsonl",
             "bm25_tokens": "bm25_tokens.pkl",
         },
@@ -107,11 +144,11 @@ def _default_sample_path() -> Path:
 
 
 def _default_index_path() -> Path:
-    return Path(__file__).resolve().parent / "hybrid_index"
+    return Path(__file__).resolve().parent / "chroma_index"
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build FAISS + BM25 hybrid index")
+    parser = argparse.ArgumentParser(description="Build ChromaDB + BM25 hybrid index")
     parser.add_argument("--data", type=Path, default=_default_dataset_path())
     parser.add_argument("--output", type=Path, default=_default_index_path())
     parser.add_argument("--limit", type=int, default=None)
@@ -122,6 +159,7 @@ def main() -> None:
     parser.add_argument("--overlap-words", type=int, default=70)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--model", type=str, default=DEFAULT_MODEL_NAME)
+    parser.add_argument("--collection", type=str, default=DEFAULT_COLLECTION_NAME)
     args = parser.parse_args()
 
     data_path = args.data
@@ -140,6 +178,7 @@ def main() -> None:
         max_words=args.max_words,
         overlap_words=args.overlap_words,
         batch_size=args.batch_size,
+        collection_name=args.collection,
     )
     print(f"Built index with {manifest['total_chunks']} chunks at {args.output}")
 

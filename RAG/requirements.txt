@@ -4,7 +4,7 @@ langchain
 langchain-community
 langchain-huggingface
 sentence-transformers
-faiss-cpu
+chromadb
 pydantic
 numpy
 rank-bm25

@@ -15,8 +15,12 @@ def get_artifacts():
     global artifacts
     if artifacts is None:
         index_path = (
-            "chatbot/hybrid_index"
-            if os.path.exists("chatbot")
+            "chatbot/chroma_index"
+            if os.path.exists("chatbot/chroma_index")
+            else "RAG/chatbot/chroma_index"
+            if os.path.exists("RAG/chatbot/chroma_index")
+            else "chatbot/hybrid_index"
+            if os.path.exists("chatbot/hybrid_index")
             else "RAG/chatbot/hybrid_index"
         )
         artifacts = load_artifacts(index_path, model_name=DEFAULT_MODEL_NAME)

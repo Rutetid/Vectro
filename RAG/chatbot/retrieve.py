@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
-import faiss
+import chromadb
 import numpy as np
 from langchain_huggingface import HuggingFaceEmbeddings
 from rank_bm25 import BM25Okapi
@@ -15,6 +15,7 @@ from chatbot.ingest import tokenize_for_bm25
 
 
 DEFAULT_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+DEFAULT_COLLECTION_NAME = "schemes_chunks"
 
 ASSISTANT_INSTRUCTIONS = [
     "Grounding: Answer ONLY from provided context.",
@@ -27,14 +28,16 @@ ASSISTANT_INSTRUCTIONS = [
 @dataclass
 class HybridArtifacts:
     chunks: List[Dict[str, Any]]
-    vectors: np.ndarray
-    faiss_index: faiss.Index
     bm25_tokens: List[List[str]]
     embeddings: HuggingFaceEmbeddings
+    chroma_collection: Any
+    chunk_id_to_index: Dict[str, int]
 
 
 def load_artifacts(
-    index_dir: Path, model_name: str = DEFAULT_MODEL_NAME
+    index_dir: Path,
+    model_name: str = DEFAULT_MODEL_NAME,
+    collection_name: str = DEFAULT_COLLECTION_NAME,
 ) -> HybridArtifacts:
     index_dir = Path(index_dir)
     chunks: List[Dict[str, Any]] = []
@@ -44,23 +47,34 @@ def load_artifacts(
             if line:
                 chunks.append(json.loads(line))
 
-    vectors = np.load(index_dir / "vectors.npy")
-    faiss_index = faiss.read_index(str(index_dir / "faiss.index"))
     with (index_dir / "bm25_tokens.pkl").open("rb") as handle:
         bm25_tokens = pickle.load(handle)
+
+    manifest_path = index_dir / "manifest.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        collection_name = manifest.get("collection_name", collection_name)
+        model_name = manifest.get("embedding_model", model_name)
+
+    chroma_dir = index_dir / "chroma_db"
+    client = chromadb.PersistentClient(path=str(chroma_dir))
+    chroma_collection = client.get_collection(name=collection_name)
 
     embeddings = HuggingFaceEmbeddings(
         model_name=model_name,
         model_kwargs={"device": "cpu"},
         encode_kwargs={"normalize_embeddings": True, "batch_size": 32},
     )
+    chunk_id_to_index = {
+        str(chunk.get("chunk_id", "")): i for i, chunk in enumerate(chunks)
+    }
 
     return HybridArtifacts(
         chunks=chunks,
-        vectors=vectors,
-        faiss_index=faiss_index,
         bm25_tokens=bm25_tokens,
         embeddings=embeddings,
+        chroma_collection=chroma_collection,
+        chunk_id_to_index=chunk_id_to_index,
     )
 
 
@@ -208,7 +222,7 @@ def filter_candidate_indices(
     return candidate_indices
 
 
-def faiss_rank(
+def chroma_vector_rank(
     artifacts: HybridArtifacts,
     query: str,
     candidate_indices: List[int],
@@ -217,18 +231,56 @@ def faiss_rank(
     if not candidate_indices:
         return []
 
-    candidate_vectors = artifacts.vectors[candidate_indices]
-    local_index = faiss.IndexFlatIP(candidate_vectors.shape[1])
-    local_index.add(candidate_vectors)
+    query_vec = _normalize_query_vector(artifacts.embeddings, query)
+    candidate_ids = [str(artifacts.chunks[i].get("chunk_id", "")) for i in candidate_indices]
+    candidate_id_set = set(candidate_ids)
 
-    query_vec = _normalize_query_vector(artifacts.embeddings, query).reshape(1, -1)
-    _, local_ids = local_index.search(query_vec, min(top_k, len(candidate_indices)))
-    ranked: List[int] = []
-    for local_id in local_ids[0]:
-        if local_id < 0:
-            continue
-        ranked.append(candidate_indices[int(local_id)])
-    return ranked
+    try:
+        result = artifacts.chroma_collection.get(
+            ids=candidate_ids, include=["embeddings"]
+        )
+        got_ids = result.get("ids") or []
+        got_embeddings = result.get("embeddings")
+        if got_embeddings is not None and len(got_ids) > 0:
+            emb_matrix = np.array(got_embeddings, dtype=np.float32)
+            if emb_matrix.ndim == 2 and emb_matrix.shape[0] == len(got_ids):
+                norms = np.linalg.norm(emb_matrix, axis=1, keepdims=True)
+                norms[norms < 1e-12] = 1.0
+                emb_matrix = emb_matrix / norms
+                scores = emb_matrix @ query_vec
+                order = np.argsort(scores)[::-1][: min(top_k, len(got_ids))]
+                ranked: List[int] = []
+                for local_pos in order:
+                    cid = str(got_ids[int(local_pos)])
+                    idx = artifacts.chunk_id_to_index.get(cid)
+                    if idx is not None:
+                        ranked.append(idx)
+                if ranked:
+                    return ranked
+    except Exception:
+        pass
+
+    # Fallback: query collection and filter to candidates
+    try:
+        q = artifacts.chroma_collection.query(
+            query_embeddings=[query_vec.tolist()],
+            n_results=min(max(top_k * 5, top_k), len(candidate_indices)),
+            include=[],
+        )
+        ids_lists = q.get("ids") or []
+        ids = ids_lists[0] if ids_lists else []
+        ranked = []
+        for cid in ids:
+            if str(cid) not in candidate_id_set:
+                continue
+            idx = artifacts.chunk_id_to_index.get(str(cid))
+            if idx is not None:
+                ranked.append(idx)
+            if len(ranked) >= top_k:
+                break
+        return ranked
+    except Exception:
+        return []
 
 
 def bm25_rank(
@@ -423,15 +475,18 @@ def retrieve_hybrid(
             "meta": meta,
         }
 
-    faiss_hits = faiss_rank(artifacts, query, candidate_indices, top_k=faiss_top_k)
+    vector_hits = chroma_vector_rank(
+        artifacts, query, candidate_indices, top_k=faiss_top_k
+    )
     bm25_hits = bm25_rank(artifacts, query, candidate_indices, top_k=bm25_top_k)
-    fused_scores = reciprocal_rank_fusion([faiss_hits, bm25_hits], k=60)
+    fused_scores = reciprocal_rank_fusion([vector_hits, bm25_hits], k=60)
     ranked_schemes = aggregate_by_scheme(
         artifacts.chunks, fused_scores, max_schemes=max_schemes
     )
     context_chunks = _build_context_chunks(artifacts.chunks, fused_scores, max_chunks=8)
 
-    meta["faiss_hits"] = len(faiss_hits)
+    meta["vector_hits"] = len(vector_hits)
+    meta["faiss_hits"] = len(vector_hits)  # backward compat for UI/logs
     meta["bm25_hits"] = len(bm25_hits)
 
     grounded_answer = "I don't know based on the provided context."
