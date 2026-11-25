@@ -51,6 +51,11 @@ class UserProfile(BaseModel):
     query: Optional[str] = None
 
 
+class ChatRequest(BaseModel):
+    message: str
+    profile: Optional[UserProfile] = None
+
+
 def _build_query_from_profile(user: UserProfile) -> str:
     if user.query and user.query.strip():
         return user.query.strip()
@@ -87,45 +92,56 @@ def health():
     return {"status": "healthy"}
 
 
+def _run_rag(user: UserProfile, question: str):
+    hybrid_artifacts = get_artifacts()
+    search_output = retrieve_hybrid(
+        artifacts=hybrid_artifacts,
+        query=question,
+        state=user.state,
+        categories=user.categories,
+        level=user.level,
+        age=user.age,
+        income=user.income,
+        gender=user.gender,
+        caste=user.caste,
+        residency=user.residency,
+        faiss_top_k=50,
+        bm25_top_k=50,
+        max_schemes=5,
+    )
+    profile_dict = user.model_dump()
+    if not search_output["results"]:
+        return {
+            "query": question,
+            "total_schemes": 0,
+            "meta": search_output["meta"],
+            "context_chunks": search_output["context_chunks"],
+            "answer": "I don't have enough information in my knowledge base to answer that. Please visit https://myscheme.gov.in for official details.",
+            "schemes": [],
+        }
+    return generate_schemes_response(retrieval_result=search_output, user_profile=profile_dict)
+
+
 @app.post("/find-schemes")
 def find_schemes(user: UserProfile):
     try:
-        hybrid_artifacts = get_artifacts()  # Lazy load
         question = _build_query_from_profile(user)
-        search_output = retrieve_hybrid(
-            artifacts=hybrid_artifacts,
-            query=question,
-            state=user.state,
-            categories=user.categories,
-            level=user.level,
-            age=user.age,
-            income=user.income,
-            gender=user.gender,
-            caste=user.caste,
-            residency=user.residency,
-            faiss_top_k=50,
-            bm25_top_k=50,
-            max_schemes=5,
-        )
+        return _run_rag(user, question)
+    except Exception as e:
+        return {"error": "Internal processing error", "details": str(e)}
 
-        if not search_output["results"]:
-            return {
-                "query": question,
-                "total_schemes": 0,
-                "meta": search_output["meta"],
-                "context_chunks": search_output["context_chunks"],
-                "answer": "No government schemes found matching the user profile.",
-                "schemes": [],
-            }
 
-        profile_dict = user.model_dump()
-        response = generate_schemes_response(
-            retrieval_result=search_output,
-            user_profile=profile_dict,
-        )
+@app.post("/chat")
+def chat(req: ChatRequest):
+    try:
+        message = (req.message or "").strip()
+        if not message:
+            return {"error": "Bad request", "details": "message is required"}
 
+        user = req.profile or UserProfile()
+        response = _run_rag(user, message)
+        response["message"] = message
         return response
-
     except Exception as e:
         return {"error": "Internal processing error", "details": str(e)}
 

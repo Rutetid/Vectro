@@ -6,6 +6,66 @@ import { authenticate, optionalAuth } from '../middleware/auth.js';
 const router = express.Router();
 
 /**
+ * POST /api/schemes/chat
+ * Follow-up chat grounded in retrieved schemes
+ */
+router.post('/chat', optionalAuth, async (req, res) => {
+  try {
+    const { message, profile } = req.body;
+    if (!message || !String(message).trim()) {
+      return res.status(400).json({ error: 'Missing message', message: 'Message is required' });
+    }
+
+    const p = profile || {};
+    const userProfile = {
+      age: p.age ? parseInt(p.age) : null,
+      gender: p.gender || null,
+      income: p.income ? parseFloat(p.income) * 100000 : null,
+      state: p.state || null,
+      occupation: p.occupation || null,
+      caste: p.category || p.caste || null,
+      residency: p.residence || p.residency || null,
+    };
+
+    const ragResponse = await ragClient.post('/chat', {
+      message: String(message).trim(),
+      profile: userProfile,
+    });
+
+    const ragData = ragResponse.data || {};
+    const schemes = (ragData.schemes || []).map((scheme, index) => ({
+      id: scheme.scheme_id || `scheme_${index + 1}`,
+      name: scheme.scheme_name || 'Government Scheme',
+      category: scheme.level || (scheme.categories && scheme.categories[0]) || 'General',
+      state: scheme.state || 'All India',
+      description: scheme.evidence || '',
+      relevanceScore: scheme.score || 0,
+      officialWebsite: (scheme.citations && scheme.citations[0]?.source_url) || '',
+      matchedSections: scheme.matched_sections || [],
+      citations: scheme.citations || [],
+    }));
+
+    res.json({
+      answer: ragData.answer || '',
+      totalSchemes: schemes.length,
+      schemes,
+      query: ragData.query || '',
+      meta: ragData.meta || {},
+      message: ragData.message || String(message).trim(),
+    });
+  } catch (error) {
+    console.error('Chat error:', error.message);
+    if (error.response) {
+      return res.status(error.response.status || 500).json({
+        error: 'RAG service error',
+        message: error.response.data?.detail || 'Failed to chat',
+      });
+    }
+    res.status(500).json({ error: 'Internal server error', message: 'Failed to chat' });
+  }
+});
+
+/**
  * POST /api/schemes/discover
  * Discover schemes based on user profile using RAG service
  */

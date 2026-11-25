@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight, ArrowLeft, Sparkles, User, Calendar, MapPin, Home, Briefcase, IndianRupee, Users, CheckCircle2, Info, ExternalLink, ShieldCheck, FileText, Search, Landmark, Target } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Sparkles, User, Calendar, MapPin, Home, Briefcase, IndianRupee, Users, CheckCircle2, Info, ExternalLink, ShieldCheck, FileText, Search, Landmark, Target, MessageSquare, Send, Loader2 } from 'lucide-react'
 import { motion as Motion, AnimatePresence } from 'motion/react'
 import { z } from 'zod'
 import ReactMarkdown from 'react-markdown'
@@ -55,6 +55,10 @@ const DiscoverPage = ({ language, setLanguage }) => {
   const [schemes, setSchemes] = useState([])
   const [showResults, setShowResults] = useState(false)
   const [aiAnswer, setAiAnswer] = useState('')
+  const [discoveredProfile, setDiscoveredProfile] = useState(null)
+  const [chatMessages, setChatMessages] = useState([])
+  const [chatInput, setChatInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
 
   const content = {
     en: {
@@ -365,6 +369,9 @@ const DiscoverPage = ({ language, setLanguage }) => {
         response = null
       }
 
+      setDiscoveredProfile(profilePayload)
+      setChatMessages([])
+
       if (response && response.schemes && response.schemes.length > 0) {
         // Real API success
         setSchemes(response.schemes)
@@ -425,6 +432,9 @@ const DiscoverPage = ({ language, setLanguage }) => {
     setShowResults(false)
     setSchemes([])
     setAiAnswer('')
+    setDiscoveredProfile(null)
+    setChatMessages([])
+    setChatInput('')
     setCurrentStep(0)
     setFormData({
       gender: '',
@@ -435,6 +445,28 @@ const DiscoverPage = ({ language, setLanguage }) => {
       income: '',
       occupation: ''
     })
+  }
+
+  const handleChatSend = async () => {
+    const message = chatInput.trim()
+    if (!message || chatLoading) return
+    if (!discoveredProfile) {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Please search for schemes first so I have your profile context.' }])
+      return
+    }
+
+    const userMsg = { role: 'user', content: message }
+    setChatMessages(prev => [...prev, userMsg])
+    setChatInput('')
+    setChatLoading(true)
+    try {
+      const res = await schemeAPI.chat(message, discoveredProfile)
+      setChatMessages(prev => [...prev, { role: 'assistant', content: res.answer || 'No answer available.', schemes: res.schemes || [] }])
+    } catch (e) {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I could not reach the chat service. Please try again.' }])
+    } finally {
+      setChatLoading(false)
+    }
   }
 
   const profileSnapshot = [
@@ -670,6 +702,64 @@ const DiscoverPage = ({ language, setLanguage }) => {
               ))}
             </AnimatePresence>
           </div>
+
+          {/* Follow-up Chat */}
+          <Motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mb-8 rounded-lg border border-white/10 bg-white/[0.05] p-4 backdrop-blur-xl sm:p-6"
+          >
+            <div className="mb-4 flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-emerald-300" />
+              <h3 className="text-lg font-semibold text-white">
+                {language === 'en' ? 'Ask follow-up questions' : 'आगे सवाल पूछें'}
+              </h3>
+            </div>
+            <p className="mb-4 text-sm text-emerald-50/65">
+              {language === 'en'
+                ? 'Ask about eligibility, documents, or application steps. Answers are grounded in retrieved scheme data for your profile.'
+                : 'पात्रता, दस्तावेज़ या आवेदन प्रक्रिया पूछें। उत्तर आपकी प्रोफ़ाइल के लिए प्राप्त योजनाओं पर आधारित होंगे।'}
+            </p>
+
+            <div className="mb-4 max-h-[360px] space-y-3 overflow-y-auto rounded-md border border-white/10 bg-black/20 p-3">
+              {chatMessages.length === 0 && (
+                <p className="text-sm text-emerald-50/45">
+                  {language === 'en' ? 'Example: "What documents do I need for PM-KISAN?"' : 'उदाहरण: "PM-KISAN के लिए कौन से दस्तावेज़ चाहिए?"'}
+                </p>
+              )}
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[90%] rounded-lg px-3 py-2 text-sm leading-6 ${msg.role === 'user' ? 'bg-emerald-400 text-zinc-950' : 'border border-white/10 bg-white/[0.06] text-emerald-50/85'}`}>
+                    {msg.role === 'assistant' ? (
+                      <div className="prose prose-invert prose-sm max-w-none"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
+                    ) : msg.content}
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="flex justify-start">
+                  <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.06] px-3 py-2 text-sm text-emerald-50/70">
+                    <Loader2 className="h-4 w-4 animate-spin" /> {language === 'en' ? 'Searching...' : 'खोज रहे हैं...'}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <Input
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleChatSend() } }}
+                placeholder={language === 'en' ? 'Ask a follow-up question...' : 'अपना सवाल लिखें...'}
+                className="h-11 border-white/10 bg-black/24 text-white placeholder:text-emerald-50/35"
+                disabled={chatLoading}
+              />
+              <Button onClick={handleChatSend} disabled={chatLoading || !chatInput.trim()} className="h-11 bg-emerald-400 px-4 text-zinc-950 hover:bg-lime-300">
+                {chatLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
+            </div>
+          </Motion.div>
 
           {/* Actions */}
           <Motion.div

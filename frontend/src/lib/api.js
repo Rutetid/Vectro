@@ -142,6 +142,11 @@ export const schemeAPI = {
     return response.data;
   },
 
+  chat: async (message, profile) => {
+    const response = await apiClient.post('/schemes/chat', { message, profile });
+    return response.data;
+  },
+
   getScheme: async (schemeId) => {
     const response = await apiClient.get(`/schemes/${schemeId}`);
     return response.data;
