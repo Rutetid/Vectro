@@ -37,9 +37,9 @@ figures. Only state what appears in the source documents.
 
 When a user provides their profile, compare their attributes against the \
 eligibility criteria in the retrieved context:
-- List schemes they MAY be eligible for with the specific criterion they satisfy.
-- If they are NOT eligible for a scheme, state which criterion disqualifies them.
-- If the context does not contain eligibility criteria, say so rather than guessing.
+- If RULE ENGINE STATUS is provided for a scheme, treat it as authoritative. Do NOT override it.
+- For `eligible`, explain which criteria are satisfied. For `ineligible`, explain the rule-engine reason. For `unknown`, clearly state missing user/scheme information.
+- If the context does not contain eligibility criteria and no rule-engine status is available, say so rather than guessing.
 
 ## OUTPUT FORMAT
 
@@ -76,6 +76,22 @@ def _build_user_prompt(
         ensure_ascii=False,
     )
     parts.append(f"## USER PROFILE\n{profile_str}")
+
+    schemes = retrieval_result.get("results", []) or retrieval_result.get("schemes", [])
+    rule_lines = []
+    for s in schemes:
+        status = s.get("eligibility_status")
+        if not status:
+            continue
+        reasons = "; ".join(s.get("eligibility_reasons", [])[:4])
+        unknowns = "; ".join(s.get("eligibility_unknowns", [])[:3])
+        rule_lines.append(
+            f"- {s.get('scheme_name','Unknown')} [{s.get('scheme_id','')}]: status={status}"
+            + (f"; reasons={reasons}" if reasons else "")
+            + (f"; unknowns={unknowns}" if unknowns else "")
+        )
+    if rule_lines:
+        parts.append("## RULE ENGINE ELIGIBILITY\n" + "\n".join(rule_lines))
 
     context_chunks = retrieval_result.get("context_chunks", [])
     if context_chunks:

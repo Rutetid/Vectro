@@ -6,6 +6,7 @@ import os
 
 from chatbot.retrieve import DEFAULT_MODEL_NAME, load_artifacts, retrieve_hybrid
 from chatbot.generate import generate_schemes_response
+from chatbot.profile_extract import extract_profile_from_message
 
 # Load retrieval artifacts lazily to reduce startup memory
 artifacts = None
@@ -54,6 +55,7 @@ class UserProfile(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     profile: Optional[UserProfile] = None
+    profile_overrides: Optional[UserProfile] = None
 
 
 def _build_query_from_profile(user: UserProfile) -> str:
@@ -94,6 +96,7 @@ def health():
 
 def _run_rag(user: UserProfile, question: str):
     hybrid_artifacts = get_artifacts()
+    profile_dict = user.model_dump()
     search_output = retrieve_hybrid(
         artifacts=hybrid_artifacts,
         query=question,
@@ -108,8 +111,8 @@ def _run_rag(user: UserProfile, question: str):
         faiss_top_k=50,
         bm25_top_k=50,
         max_schemes=5,
+        profile_for_rules=profile_dict,
     )
-    profile_dict = user.model_dump()
     if not search_output["results"]:
         return {
             "query": question,
@@ -118,8 +121,11 @@ def _run_rag(user: UserProfile, question: str):
             "context_chunks": search_output["context_chunks"],
             "answer": "I don't have enough information in my knowledge base to answer that. Please visit https://myscheme.gov.in for official details.",
             "schemes": [],
+            "profile": profile_dict,
         }
-    return generate_schemes_response(retrieval_result=search_output, user_profile=profile_dict)
+    response = generate_schemes_response(retrieval_result=search_output, user_profile=profile_dict)
+    response["profile"] = profile_dict
+    return response
 
 
 @app.post("/find-schemes")
@@ -138,9 +144,21 @@ def chat(req: ChatRequest):
         if not message:
             return {"error": "Bad request", "details": "message is required"}
 
-        user = req.profile or UserProfile()
+        extracted = extract_profile_from_message(message)
+        merged = dict(extracted.get("profile") or {})
+
+        override_profile = req.profile_overrides or req.profile
+        if override_profile:
+            for k, v in override_profile.model_dump().items():
+                if v is not None and v != "" and v != []:
+                    merged[k] = v
+
+        user = UserProfile(**{k: merged.get(k) for k in UserProfile.model_fields.keys()})
         response = _run_rag(user, message)
         response["message"] = message
+        response["extracted_profile"] = extracted.get("profile")
+        response["missing_fields"] = extracted.get("missing_fields", [])
+        response["extraction_source"] = extracted.get("source")
         return response
     except Exception as e:
         return {"error": "Internal processing error", "details": str(e)}

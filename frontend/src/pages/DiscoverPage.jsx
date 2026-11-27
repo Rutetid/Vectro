@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowRight, ArrowLeft, Sparkles, User, Calendar, MapPin, Home, Briefcase, IndianRupee, Users, CheckCircle2, Info, ExternalLink, ShieldCheck, FileText, Search, Landmark, Target, MessageSquare, Send, Loader2 } from 'lucide-react'
 import { motion as Motion, AnimatePresence } from 'motion/react'
 import { z } from 'zod'
@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import Navbar from '@/components/Navbar'
 import { schemeAPI } from '@/lib/api'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 const formSchema = z.object({
   gender: z.enum(['male', 'female', 'other'], {
@@ -39,7 +39,11 @@ const formSchema = z.object({
   }),
 })
 
+const RESULTS_STORAGE_KEY = 'vectro_discover_results'
+
 const DiscoverPage = ({ language, setLanguage }) => {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState({
     gender: '',
@@ -372,43 +376,44 @@ const DiscoverPage = ({ language, setLanguage }) => {
       setDiscoveredProfile(profilePayload)
       setChatMessages([])
 
-      if (response && response.schemes && response.schemes.length > 0) {
-        // Real API success
-        setSchemes(response.schemes)
-        setAiAnswer(response.answer || '')
-      } else {
-        // Fallback to mock data
-        const mockData = {
-          student: {
-            "query": "Find government schemes for 21 year old student obc male in bihar with income under 100000",
-            "total_schemes": 5,
-            "schemes": [
-              { id: 'DDUGKY15', name: 'Deen Dayal Upadhyaya Grameen Kaushalya Yojana (DDU-GKY)', category: 'Skill Development', state: 'All India', description: 'Skill training and placement for rural youth.', eligibility: 'Age 15-35, SC/ST/OBC/BPL', benefits: 'Skill training and placement for rural youth', documents: 'Aadhaar Card, Rural Residence Proof', relevanceScore: 0.18, officialWebsite: 'https://www.myscheme.gov.in/schemes/ddugky' },
-              { id: 'MGNREGA06', name: 'Mahatma Gandhi National Rural Employment Guarantee Act (MGNREGA)', category: 'Employment', state: 'All India', description: 'Guaranteed 100 days of wage employment in rural areas.', eligibility: 'Age 18+, Any gender', benefits: 'Guaranteed 100 days of wage employment', documents: 'Aadhaar Card, Job Card, Bank Account Details', relevanceScore: 0.16, officialWebsite: 'https://www.myscheme.gov.in/schemes/mgnrega' },
-              { id: 'PMKISAN03', name: 'Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)', category: 'Agriculture', state: 'All India', description: '₹6000 per year financial support to farmers.', eligibility: 'Age 18+, Farmer, Land required', benefits: '₹6000 per year financial support to farmers', documents: 'Aadhaar Card, Land Ownership Documents, Bank Account Details', relevanceScore: 0.05, officialWebsite: 'https://www.myscheme.gov.in/schemes/pm-kisan' },
-              { id: 'PMAY01', name: 'Pradhan Mantri Awas Yojana (PMAY)', category: 'Housing', state: 'All India', description: 'Financial assistance for building or buying a pucca house.', eligibility: 'Age 18+, Income under ₹3L, Any gender', benefits: 'Financial assistance for building or buying a pucca house', documents: 'Aadhaar Card, Income Certificate, Bank Account Details', relevanceScore: 0.05, officialWebsite: 'https://www.myscheme.gov.in/schemes/pmay' },
-              { id: 'PMKVY12', name: 'Pradhan Mantri Kaushal Vikas Yojana (PMKVY)', category: 'Skill Development', state: 'All India', description: 'Free skill training and certification.', eligibility: 'Age 15-45', benefits: 'Free skill training and certification', documents: 'Aadhaar Card, Education Certificate', relevanceScore: 0.04, officialWebsite: 'https://www.myscheme.gov.in/schemes/pmkvy' },
-            ]
-          },
-          agriculture: {
-            "query": "Find government schemes for 35 year old agriculture sc male in bihar with income under 150000",
-            "total_schemes": 4,
-            "schemes": [
-              { id: 'PMKISAN03', name: 'Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)', category: 'Agriculture', state: 'All India', description: '₹6000 per year financial support to farmers.', eligibility: 'Age 18+, Farmer, Land required', benefits: '₹6000 per year financial support to farmers', documents: 'Aadhaar Card, Land Ownership Documents, Bank Account Details', relevanceScore: 0.19, officialWebsite: 'https://www.myscheme.gov.in/schemes/pm-kisan' },
-              { id: 'MGNREGA06', name: 'Mahatma Gandhi National Rural Employment Guarantee Act (MGNREGA)', category: 'Employment', state: 'All India', description: 'Guaranteed 100 days of wage employment in rural areas.', eligibility: 'Age 18+, Any gender', benefits: 'Guaranteed 100 days of wage employment', documents: 'Aadhaar Card, Job Card, Bank Account Details', relevanceScore: 0.16, officialWebsite: 'https://www.myscheme.gov.in/schemes/mgnrega' },
-              { id: 'DDUGKY15', name: 'Deen Dayal Upadhyaya Grameen Kaushalya Yojana (DDU-GKY)', category: 'Skill Development', state: 'All India', description: 'Skill training and placement for rural youth.', eligibility: 'Age 15-35, SC/ST/OBC/BPL', benefits: 'Skill training and placement for rural youth', documents: 'Aadhaar Card, Rural Residence Proof', relevanceScore: 0.14, officialWebsite: 'https://www.myscheme.gov.in/schemes/ddugky' },
-              { id: 'PMAY01', name: 'Pradhan Mantri Awas Yojana (PMAY)', category: 'Housing', state: 'All India', description: 'Financial assistance for building or buying a pucca house.', eligibility: 'Age 18+, Income under ₹3L, Any gender', benefits: 'Financial assistance for building or buying a pucca house', documents: 'Aadhaar Card, Income Certificate, Bank Account Details', relevanceScore: 0.001, officialWebsite: 'https://www.myscheme.gov.in/schemes/pmay' },
-            ]
-          }
+      const mockData = {
+        student: {
+          "query": "Find government schemes for 21 year old student obc male in bihar with income under 100000",
+          "total_schemes": 5,
+          "schemes": [
+            { id: 'DDUGKY15', name: 'Deen Dayal Upadhyaya Grameen Kaushalya Yojana (DDU-GKY)', category: 'Skill Development', state: 'All India', description: 'Skill training and placement for rural youth.', eligibility: 'Age 15-35, SC/ST/OBC/BPL', benefits: 'Skill training and placement for rural youth', documents: 'Aadhaar Card, Rural Residence Proof', relevanceScore: 0.18, officialWebsite: 'https://www.myscheme.gov.in/schemes/ddugky' },
+            { id: 'MGNREGA06', name: 'Mahatma Gandhi National Rural Employment Guarantee Act (MGNREGA)', category: 'Employment', state: 'All India', description: 'Guaranteed 100 days of wage employment in rural areas.', eligibility: 'Age 18+, Any gender', benefits: 'Guaranteed 100 days of wage employment', documents: 'Aadhaar Card, Job Card, Bank Account Details', relevanceScore: 0.16, officialWebsite: 'https://www.myscheme.gov.in/schemes/mgnrega' },
+            { id: 'PMKISAN03', name: 'Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)', category: 'Agriculture', state: 'All India', description: '₹6000 per year financial support to farmers.', eligibility: 'Age 18+, Farmer, Land required', benefits: '₹6000 per year financial support to farmers', documents: 'Aadhaar Card, Land Ownership Documents, Bank Account Details', relevanceScore: 0.05, officialWebsite: 'https://www.myscheme.gov.in/schemes/pm-kisan' },
+            { id: 'PMAY01', name: 'Pradhan Mantri Awas Yojana (PMAY)', category: 'Housing', state: 'All India', description: 'Financial assistance for building or buying a pucca house.', eligibility: 'Age 18+, Income under ₹3L, Any gender', benefits: 'Financial assistance for building or buying a pucca house', documents: 'Aadhaar Card, Income Certificate, Bank Account Details', relevanceScore: 0.05, officialWebsite: 'https://www.myscheme.gov.in/schemes/pmay' },
+            { id: 'PMKVY12', name: 'Pradhan Mantri Kaushal Vikas Yojana (PMKVY)', category: 'Skill Development', state: 'All India', description: 'Free skill training and certification.', eligibility: 'Age 15-45', benefits: 'Free skill training and certification', documents: 'Aadhaar Card, Education Certificate', relevanceScore: 0.04, officialWebsite: 'https://www.myscheme.gov.in/schemes/pmkvy' },
+          ]
+        },
+        agriculture: {
+          "query": "Find government schemes for 35 year old agriculture sc male in bihar with income under 150000",
+          "total_schemes": 4,
+          "schemes": [
+            { id: 'PMKISAN03', name: 'Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)', category: 'Agriculture', state: 'All India', description: '₹6000 per year financial support to farmers.', eligibility: 'Age 18+, Farmer, Land required', benefits: '₹6000 per year financial support to farmers', documents: 'Aadhaar Card, Land Ownership Documents, Bank Account Details', relevanceScore: 0.19, officialWebsite: 'https://www.myscheme.gov.in/schemes/pm-kisan' },
+            { id: 'MGNREGA06', name: 'Mahatma Gandhi National Rural Employment Guarantee Act (MGNREGA)', category: 'Employment', state: 'All India', description: 'Guaranteed 100 days of wage employment in rural areas.', eligibility: 'Age 18+, Any gender', benefits: 'Guaranteed 100 days of wage employment', documents: 'Aadhaar Card, Job Card, Bank Account Details', relevanceScore: 0.16, officialWebsite: 'https://www.myscheme.gov.in/schemes/mgnrega' },
+            { id: 'DDUGKY15', name: 'Deen Dayal Upadhyaya Grameen Kaushalya Yojana (DDU-GKY)', category: 'Skill Development', state: 'All India', description: 'Skill training and placement for rural youth.', eligibility: 'Age 15-35, SC/ST/OBC/BPL', benefits: 'Skill training and placement for rural youth', documents: 'Aadhaar Card, Rural Residence Proof', relevanceScore: 0.14, officialWebsite: 'https://www.myscheme.gov.in/schemes/ddugky' },
+            { id: 'PMAY01', name: 'Pradhan Mantri Awas Yojana (PMAY)', category: 'Housing', state: 'All India', description: 'Financial assistance for building or buying a pucca house.', eligibility: 'Age 18+, Income under ₹3L, Any gender', benefits: 'Financial assistance for building or buying a pucca house', documents: 'Aadhaar Card, Income Certificate, Bank Account Details', relevanceScore: 0.001, officialWebsite: 'https://www.myscheme.gov.in/schemes/pmay' },
+          ]
         }
-
-        const fallback = mockData[validatedData.occupation] || mockData.student
-        setSchemes(fallback.schemes)
-        setAiAnswer('')
       }
+      const fallback = mockData[validatedData.occupation] || mockData.student
+      const finalSchemes = response?.schemes?.length > 0 ? response.schemes : fallback.schemes
+      const finalAnswer = response?.answer || ''
 
-      setShowResults(true)
+      setSchemes(finalSchemes)
+      setAiAnswer(finalAnswer)
+      const payload = {
+        schemes: finalSchemes,
+        aiAnswer: finalAnswer,
+        profile: profilePayload,
+        chatMessages: []
+      }
+      sessionStorage.setItem(RESULTS_STORAGE_KEY, JSON.stringify(payload))
       setLoading(false)
+      navigate('/discover/results', { state: { results: payload } })
 
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -429,6 +434,7 @@ const DiscoverPage = ({ language, setLanguage }) => {
   }
 
   const handleStartOver = () => {
+    sessionStorage.removeItem(RESULTS_STORAGE_KEY)
     setShowResults(false)
     setSchemes([])
     setAiAnswer('')
@@ -445,7 +451,49 @@ const DiscoverPage = ({ language, setLanguage }) => {
       income: '',
       occupation: ''
     })
+    navigate('/discover')
   }
+
+  useEffect(() => {
+    const onResultsRoute = location.pathname === '/discover/results'
+    if (!onResultsRoute) {
+      setShowResults(false)
+      return
+    }
+
+    const fromState = location.state?.results
+    if (fromState?.schemes) {
+      setSchemes(fromState.schemes || [])
+      setAiAnswer(fromState.aiAnswer || '')
+      setDiscoveredProfile(fromState.profile || null)
+      setChatMessages(fromState.chatMessages || [])
+      setShowResults(true)
+      return
+    }
+
+    const raw = sessionStorage.getItem(RESULTS_STORAGE_KEY)
+    if (!raw) {
+      navigate('/discover', { replace: true })
+      return
+    }
+    try {
+      const parsed = JSON.parse(raw)
+      setSchemes(parsed.schemes || [])
+      setAiAnswer(parsed.aiAnswer || '')
+      setDiscoveredProfile(parsed.profile || null)
+      setChatMessages(parsed.chatMessages || [])
+      setShowResults(true)
+    } catch {
+      sessionStorage.removeItem(RESULTS_STORAGE_KEY)
+      navigate('/discover', { replace: true })
+    }
+  }, [location.pathname, location.state, navigate])
+
+  useEffect(() => {
+    if (!showResults) return
+    const payload = { schemes, aiAnswer, profile: discoveredProfile, chatMessages }
+    sessionStorage.setItem(RESULTS_STORAGE_KEY, JSON.stringify(payload))
+  }, [showResults, schemes, aiAnswer, discoveredProfile, chatMessages])
 
   const handleChatSend = async () => {
     const message = chatInput.trim()
@@ -461,7 +509,14 @@ const DiscoverPage = ({ language, setLanguage }) => {
     setChatLoading(true)
     try {
       const res = await schemeAPI.chat(message, discoveredProfile)
-      setChatMessages(prev => [...prev, { role: 'assistant', content: res.answer || 'No answer available.', schemes: res.schemes || [] }])
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        content: res.answer || 'No answer available.',
+        schemes: res.schemes || [],
+        extractedProfile: res.extractedProfile || null,
+        missingFields: res.missingFields || [],
+        extractionSource: res.extractionSource || null,
+      }])
     } catch (e) {
       setChatMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I could not reach the chat service. Please try again.' }])
     } finally {
@@ -541,9 +596,9 @@ const DiscoverPage = ({ language, setLanguage }) => {
     return (
       <div className="min-h-screen bg-[#07110d] text-white">
         <Navbar language={language} setLanguage={setLanguage} />
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden pt-20 sm:pt-24">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_12%,rgba(16,185,129,0.20),transparent_30%),radial-gradient(circle_at_80%_0%,rgba(250,204,21,0.10),transparent_28%)]" />
-          <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="relative mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
           {/* Results Header */}
           <Motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -575,28 +630,28 @@ const DiscoverPage = ({ language, setLanguage }) => {
             </div>
           </Motion.div>
 
-          {/* AI Generated Summary Banner */}
-          {aiAnswer && (
-            <Motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="mb-6 rounded-lg border border-emerald-300/20 bg-emerald-300/5 p-5 backdrop-blur-xl sm:p-6"
-            >
-              <div className="mb-3 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-emerald-300" />
-                <h3 className="text-sm font-semibold text-emerald-100">
-                  {language === 'en' ? 'AI Analysis' : 'AI विश्लेषण'}
-                </h3>
-              </div>
-              <div className="prose prose-invert prose-sm max-w-none text-emerald-50/80 leading-7">
-                <ReactMarkdown>{aiAnswer}</ReactMarkdown>
-              </div>
-            </Motion.div>
-          )}
+          {/* AI Analysis + Scheme Cards */}
+          <div className="mb-6 space-y-4 sm:mb-8">
+            {aiAnswer && (
+              <Motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="rounded-lg border border-emerald-300/20 bg-emerald-300/5 p-5 backdrop-blur-xl sm:p-6"
+              >
+                <div className="mb-3 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-emerald-300" />
+                  <h3 className="text-sm font-semibold text-emerald-100">
+                    {language === 'en' ? 'AI Analysis' : 'AI विश्लेषण'}
+                  </h3>
+                </div>
+                <div className="prose prose-invert prose-sm max-w-none text-emerald-50/80 leading-7">
+                  <ReactMarkdown>{aiAnswer}</ReactMarkdown>
+                </div>
+              </Motion.div>
+            )}
 
-          {/* Schemes Grid */}
-          <div className="mb-6 grid gap-4 sm:mb-8 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence>
               {schemes.map((scheme, index) => (
                 <Motion.div
@@ -610,14 +665,30 @@ const DiscoverPage = ({ language, setLanguage }) => {
                     <CardContent className="flex h-full flex-col p-4 sm:p-5">
                       {/* Relevance Badge */}
                       <div className="mb-4 flex items-center justify-between gap-3">
-                        <span className="inline-flex items-center rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-xs font-medium text-emerald-100">
-                          {scheme.category || 'General'}
-                        </span>
-                        <div className="flex items-center gap-1 text-xs text-emerald-50/60">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-xs font-medium text-emerald-100">
+                            {scheme.category || 'General'}
+                          </span>
+                          {scheme.eligibilityStatus && (
+                            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${
+                              scheme.eligibilityStatus === 'eligible' ? 'border-emerald-300/30 bg-emerald-400/15 text-emerald-100'
+                              : scheme.eligibilityStatus === 'ineligible' ? 'border-red-300/30 bg-red-400/10 text-red-100'
+                              : 'border-amber-300/30 bg-amber-400/10 text-amber-100'
+                            }`}>
+                              {scheme.eligibilityStatus}
+                            </span>
+                          )}
+                        </div>
+                        {/* <div className="flex items-center gap-1 text-xs text-emerald-50/60">
                           <Sparkles className="w-4 h-4" />
                           <span>{Math.max(1, ((1 - scheme.relevanceScore) * 100)).toFixed(0)}% fit</span>
-                        </div>
+                        </div> */}
                       </div>
+                      {scheme.eligibilityStatus && (scheme.eligibilityReasons?.length > 0 || scheme.eligibilityUnknowns?.length > 0) && (
+                        <p className="mb-3 text-xs text-emerald-50/60 line-clamp-2">
+                          {(scheme.eligibilityReasons?.[0] || scheme.eligibilityUnknowns?.[0] || '')}
+                        </p>
+                      )}
 
                       {/* Scheme Name */}
                       <h3 className="mb-2 line-clamp-2 min-h-12 text-lg font-semibold leading-6 text-white">
@@ -701,6 +772,7 @@ const DiscoverPage = ({ language, setLanguage }) => {
                 </Motion.div>
               ))}
             </AnimatePresence>
+            </div>
           </div>
 
           {/* Follow-up Chat */}
@@ -732,7 +804,20 @@ const DiscoverPage = ({ language, setLanguage }) => {
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[90%] rounded-lg px-3 py-2 text-sm leading-6 ${msg.role === 'user' ? 'bg-emerald-400 text-zinc-950' : 'border border-white/10 bg-white/[0.06] text-emerald-50/85'}`}>
                     {msg.role === 'assistant' ? (
-                      <div className="prose prose-invert prose-sm max-w-none"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
+                      <div>
+                        {msg.extractedProfile && (
+                          <div className="mb-2 rounded border border-white/10 bg-black/20 p-2 text-xs text-emerald-50/70">
+                            <div className="font-medium text-emerald-100 mb-1">Profile understood {msg.extractionSource ? `(${msg.extractionSource})` : ''}</div>
+                            <div className="flex flex-wrap gap-x-3 gap-y-1">
+                              {Object.entries(msg.extractedProfile).filter(([,v]) => v !== null && v !== '' && !(Array.isArray(v) && v.length===0)).map(([k,v]) => (
+                                <span key={k}><span className="text-emerald-50/45">{k}:</span> {String(v)}</span>
+                              ))}
+                            </div>
+                            {msg.missingFields?.length > 0 && <div className="mt-1 text-amber-200/80">Missing: {msg.missingFields.join(', ')}</div>}
+                          </div>
+                        )}
+                        <div className="prose prose-invert prose-sm max-w-none"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
+                      </div>
                     ) : msg.content}
                   </div>
                 </div>
@@ -802,7 +887,7 @@ const DiscoverPage = ({ language, setLanguage }) => {
     <div className="min-h-screen bg-[#07110d] text-white">
       <Navbar language={language} setLanguage={setLanguage} />
       
-      <div className="border-b border-white/5 bg-black/20">
+      <div className="pt-20 sm:pt-24 border-b border-white/5 bg-black/20">
         <div className="h-1 bg-white/10">
           <div 
             className="h-full bg-gradient-to-r from-emerald-400 via-lime-300 to-amber-300 shadow-[0_0_18px_rgba(16,185,129,0.45)] transition-all duration-500 ease-out"

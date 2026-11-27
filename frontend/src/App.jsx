@@ -13,6 +13,7 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage language={language} setLanguage={setLanguage} />} />
       <Route path="/discover" element={<DiscoverPage language={language} setLanguage={setLanguage} />} />
+      <Route path="/discover/results" element={<DiscoverPage language={language} setLanguage={setLanguage} />} />
       <Route path="/login" element={<LoginPage language={language} />} />
       <Route path="/profile" element={<ProfilePage language={language} setLanguage={setLanguage} />} />
       <Route path="/scheme/:schemeId" element={<SchemeDetailsPage language={language} setLanguage={setLanguage} />} />

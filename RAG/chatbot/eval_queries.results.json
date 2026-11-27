@@ -1,0 +1,1227 @@
+{
+  "k": 5,
+  "eval_file": "chatbot/eval_queries.jsonl",
+  "index_dir": "chatbot/chroma_index",
+  "results": [
+    {
+      "method": "bm25",
+      "n": 20,
+      "Recall@5": 0.8,
+      "MRR": 0.5225,
+      "Avg latency (ms)": 1201.26,
+      "per_query": [
+        {
+          "query": "PM Kisan Samman Nidhi income support for small farmer",
+          "gold": [
+            "pm-kisan"
+          ],
+          "predicted": [
+            "pmmvy",
+            "pm-kusum",
+            "igpbssny",
+            "pmkmdy",
+            "ksyg"
+          ],
+          "hit_rank": null
+        },
+        {
+          "query": "Pradhan Mantri Kaushal Vikas Yojana short term training for unemployed youth",
+          "gold": [
+            "pmkvy-rpl",
+            "pmkvy-stt",
+            "pmkvy-sp"
+          ],
+          "predicted": [
+            "sdftcw",
+            "batcs",
+            "mbkvy",
+            "skvk2",
+            "erky"
+          ],
+          "hit_rank": null
+        },
+        {
+          "query": "Pradhan Mantri Awas Yojana urban housing subsidy for low income family",
+          "gold": [
+            "pmay-u"
+          ],
+          "predicted": [
+            "cngophr",
+            "scnpsaahr",
+            "clssmig",
+            "rhs",
+            "gtachcw"
+          ],
+          "hit_rank": null
+        },
+        {
+          "query": "Pradhan Mantri Awas Yojana Gramin rural housing assistance",
+          "gold": [
+            "pmay-g"
+          ],
+          "predicted": [
+            "mgawb",
+            "agy-itb",
+            "pmay-g",
+            "aay",
+            "nsjbsy"
+          ],
+          "hit_rank": 3
+        },
+        {
+          "query": "Ayushman Bharat PMJAY health insurance for poor family",
+          "gold": [
+            "ab-pmjay"
+          ],
+          "predicted": [
+            "cmhtp-crwtp-smile",
+            "himcare",
+            "ab-pmjay",
+            "gbsy",
+            "mmsby"
+          ],
+          "hit_rank": 3
+        },
+        {
+          "query": "crop insurance for farmers against crop loss",
+          "gold": [
+            "pmfby"
+          ],
+          "predicted": [
+            "nai",
+            "pmfby",
+            "jrfry",
+            "cmkry",
+            "soipfsci"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "maternity benefit for pregnant woman PMMVY",
+          "gold": [
+            "pmmvy"
+          ],
+          "predicted": [
+            "pmmvy",
+            "dccbfml",
+            "mbffwjkbocwwb",
+            "jssk",
+            "jey"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "free LPG connection Ujjwala for poor woman",
+          "gold": [
+            "pmuy2",
+            "pmuy"
+          ],
+          "predicted": [
+            "pmuy",
+            "wcbplpfruauk",
+            "mmgsy",
+            "sbbs",
+            "pmay-g"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "old age pension Indira Gandhi National Old Age Pension Scheme",
+          "gold": [
+            "nsap-ignoaps"
+          ],
+          "predicted": [
+            "nsap-ignoaps",
+            "ignoapsjak",
+            "igoapsm",
+            "ignoaps-sikkim",
+            "ignoapsch"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "educational assistance for children of construction worker in Maharashtra",
+          "gold": [
+            "eacs1t7a8t10"
+          ],
+          "predicted": [
+            "eacrws11a12s",
+            "eacs1t7a8t10",
+            "eafdc",
+            "eafmaec",
+            "eagrdc"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "Dr Panjabrao Deshmukh hostel maintenance allowance for Maharashtra student",
+          "gold": [
+            "drpdhma"
+          ],
+          "predicted": [
+            "pmavssspc",
+            "pm-usp-sssjkl",
+            "drpdhma",
+            "css-umscs",
+            "pmscteoicphh"
+          ],
+          "hit_rank": 3
+        },
+        {
+          "query": "Indira Gandhi National Widow Pension Scheme",
+          "gold": [
+            "ignwpschh",
+            "ignwpsb",
+            "ignwps-sikkim",
+            "ignwps"
+          ],
+          "predicted": [
+            "ignwpschh",
+            "wphbocwwb",
+            "ignwpsmp",
+            "ignwpsp",
+            "ignwpsm"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Indira Gandhi National Disability Pension Scheme",
+          "gold": [
+            "igndps-sikkim",
+            "igndps"
+          ],
+          "predicted": [
+            "igndpsp",
+            "igndpsm",
+            "ngndpsmp",
+            "igndps-sikkim",
+            "igndpstn"
+          ],
+          "hit_rank": 4
+        },
+        {
+          "query": "post matric scholarship for SC students",
+          "gold": [
+            "icar-pms-scstc",
+            "pmsc",
+            "pmsfssd",
+            "mpmssc"
+          ],
+          "predicted": [
+            "pmsscstb",
+            "tukpmsfst",
+            "pmpms",
+            "gbsysc",
+            "pmsfssd"
+          ],
+          "hit_rank": 5
+        },
+        {
+          "query": "post matric scholarship for OBC students",
+          "gold": [
+            "csspostmsossi",
+            "pmsoeds",
+            "pm-yasasvipmsobcebcdnts"
+          ],
+          "predicted": [
+            "pmpms",
+            "gbsyobc",
+            "pmssb",
+            "tukpmsfst",
+            "pmsscpecp"
+          ],
+          "hit_rank": null
+        },
+        {
+          "query": "National Apprenticeship Promotion Scheme training",
+          "gold": [
+            "nsat",
+            "naps"
+          ],
+          "predicted": [
+            "naps",
+            "mayg",
+            "ads",
+            "ipsaeusd",
+            "sgsscst"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Kisan Credit Card for farmers",
+          "gold": [
+            "kccp",
+            "kcc"
+          ],
+          "predicted": [
+            "cmkry",
+            "kccp",
+            "kccsf-cmfps",
+            "tpahkcc",
+            "tpfkcc"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "Swachh Bharat Mission Grameen rural sanitation toilet",
+          "gold": [
+            "sbm-g-ii",
+            "sbm-g-i",
+            "sbmgwmuk"
+          ],
+          "predicted": [
+            "sbm-g-ii",
+            "sbmgwmuk",
+            "sbm-g-i",
+            "ssyup",
+            "pmay-g"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Pension scheme for women in distress widow Delhi",
+          "gold": [
+            "dpswdwp"
+          ],
+          "predicted": [
+            "sssps",
+            "dpswdwp",
+            "fawdsddaw",
+            "icwf",
+            "mafcw"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "Mukhyamantri Apprenticeship Yojana for youth",
+          "gold": [
+            "mayg"
+          ],
+          "predicted": [
+            "mayg",
+            "naps",
+            "mkuevry",
+            "nsat",
+            "makimstc"
+          ],
+          "hit_rank": 1
+        }
+      ]
+    },
+    {
+      "method": "vector",
+      "n": 20,
+      "Recall@5": 0.85,
+      "MRR": 0.51,
+      "Avg latency (ms)": 1164.47,
+      "per_query": [
+        {
+          "query": "PM Kisan Samman Nidhi income support for small farmer",
+          "gold": [
+            "pm-kisan"
+          ],
+          "predicted": [
+            "ksyj",
+            "aiguk",
+            "cmkry",
+            "mksy",
+            "jrfry"
+          ],
+          "hit_rank": null
+        },
+        {
+          "query": "Pradhan Mantri Kaushal Vikas Yojana short term training for unemployed youth",
+          "gold": [
+            "pmkvy-rpl",
+            "pmkvy-stt",
+            "pmkvy-sp"
+          ],
+          "predicted": [
+            "himayat",
+            "dpiti",
+            "mmpveapvkvpy",
+            "mhvs-sebs",
+            "sdftcw"
+          ],
+          "hit_rank": null
+        },
+        {
+          "query": "Pradhan Mantri Awas Yojana urban housing subsidy for low income family",
+          "gold": [
+            "pmay-u"
+          ],
+          "predicted": [
+            "pmay-u",
+            "daay",
+            "aaiay",
+            "pmay-g",
+            "sndaygbocwwb"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Pradhan Mantri Awas Yojana Gramin rural housing assistance",
+          "gold": [
+            "pmay-g"
+          ],
+          "predicted": [
+            "pmayguk",
+            "agy-itb",
+            "bay",
+            "pmay-g",
+            "mgawb"
+          ],
+          "hit_rank": 4
+        },
+        {
+          "query": "Ayushman Bharat PMJAY health insurance for poor family",
+          "gold": [
+            "ab-pmjay"
+          ],
+          "predicted": [
+            "himcare",
+            "ab-pmjay",
+            "maayr",
+            "cmhtp-crwtp-smile",
+            "ddssy"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "crop insurance for farmers against crop loss",
+          "gold": [
+            "pmfby"
+          ],
+          "predicted": [
+            "nai",
+            "pmfby",
+            "wbcism",
+            "mksy",
+            "rccdcwrfv"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "maternity benefit for pregnant woman PMMVY",
+          "gold": [
+            "pmmvy"
+          ],
+          "predicted": [
+            "pmmvy",
+            "mbanbocwwb",
+            "mbffwjkbocwwb",
+            "mbmbocwwb",
+            "mbsapbocwwb"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "free LPG connection Ujjwala for poor woman",
+          "gold": [
+            "pmuy2",
+            "pmuy"
+          ],
+          "predicted": [
+            "pmuy",
+            "mmgsy",
+            "sgatt",
+            "mvy",
+            "mmmsy"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "old age pension Indira Gandhi National Old Age Pension Scheme",
+          "gold": [
+            "nsap-ignoaps"
+          ],
+          "predicted": [
+            "igoapsm",
+            "ignoapsjak",
+            "ignoaps-sikkim",
+            "ignoapsb",
+            "ignoapsch"
+          ],
+          "hit_rank": null
+        },
+        {
+          "query": "educational assistance for children of construction worker in Maharashtra",
+          "gold": [
+            "eacs1t7a8t10"
+          ],
+          "predicted": [
+            "eacrws11a12s",
+            "eatt10t12s",
+            "eafdc",
+            "eafmaec",
+            "eacs1t7a8t10"
+          ],
+          "hit_rank": 5
+        },
+        {
+          "query": "Dr Panjabrao Deshmukh hostel maintenance allowance for Maharashtra student",
+          "gold": [
+            "drpdhma"
+          ],
+          "predicted": [
+            "pmavssspc",
+            "drpdhma",
+            "pmsssc",
+            "shreshta-m2-ngoos",
+            "css-umscs"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "Indira Gandhi National Widow Pension Scheme",
+          "gold": [
+            "ignwpschh",
+            "ignwpsb",
+            "ignwps-sikkim",
+            "ignwps"
+          ],
+          "predicted": [
+            "ignwpsjak",
+            "ignwpstn",
+            "ignwpsb",
+            "ignwpsm",
+            "ignwpsmp"
+          ],
+          "hit_rank": 3
+        },
+        {
+          "query": "Indira Gandhi National Disability Pension Scheme",
+          "gold": [
+            "igndps-sikkim",
+            "igndps"
+          ],
+          "predicted": [
+            "igndpstn",
+            "ignsap",
+            "igndps",
+            "igndpsm",
+            "igndpsb"
+          ],
+          "hit_rank": 3
+        },
+        {
+          "query": "post matric scholarship for SC students",
+          "gold": [
+            "icar-pms-scstc",
+            "pmsc",
+            "pmsfssd",
+            "mpmssc"
+          ],
+          "predicted": [
+            "pmcssc",
+            "pmsscstb",
+            "icar-pms-scstc",
+            "pmsfss",
+            "pmsssc"
+          ],
+          "hit_rank": 3
+        },
+        {
+          "query": "post matric scholarship for OBC students",
+          "gold": [
+            "csspostmsossi",
+            "pmsoeds",
+            "pm-yasasvipmsobcebcdnts"
+          ],
+          "predicted": [
+            "csspremsobcsi",
+            "gbsyobc",
+            "pmssb",
+            "pm-yasasvipmsobcebcdnts",
+            "pmsfssd"
+          ],
+          "hit_rank": 4
+        },
+        {
+          "query": "National Apprenticeship Promotion Scheme training",
+          "gold": [
+            "nsat",
+            "naps"
+          ],
+          "predicted": [
+            "naps",
+            "mayg",
+            "iitpes",
+            "ahst",
+            "lstsmpbocwwb"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Kisan Credit Card for farmers",
+          "gold": [
+            "kccp",
+            "kcc"
+          ],
+          "predicted": [
+            "cmkry",
+            "kccp",
+            "kccsf-cmfps",
+            "tpahkcc",
+            "tpfkcc"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "Swachh Bharat Mission Grameen rural sanitation toilet",
+          "gold": [
+            "sbm-g-ii",
+            "sbm-g-i",
+            "sbmgwmuk"
+          ],
+          "predicted": [
+            "sbm-g-ii",
+            "sbm-g-i",
+            "sbmgwmuk",
+            "ssyup",
+            "hpmvssp"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Pension scheme for women in distress widow Delhi",
+          "gold": [
+            "dpswdwp"
+          ],
+          "predicted": [
+            "dpswdwp",
+            "ignwps",
+            "fawdsddaw",
+            "pm-sym",
+            "dpcw"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Mukhyamantri Apprenticeship Yojana for youth",
+          "gold": [
+            "mayg"
+          ],
+          "predicted": [
+            "mkuevry",
+            "mayg",
+            "mmsky",
+            "mmpyj",
+            "mbpym"
+          ],
+          "hit_rank": 2
+        }
+      ]
+    },
+    {
+      "method": "hybrid",
+      "n": 20,
+      "Recall@5": 0.85,
+      "MRR": 0.5225,
+      "Avg latency (ms)": 1163.77,
+      "per_query": [
+        {
+          "query": "PM Kisan Samman Nidhi income support for small farmer",
+          "gold": [
+            "pm-kisan"
+          ],
+          "predicted": [
+            "pmmvy",
+            "pmkmdy",
+            "ksyj",
+            "cmkry",
+            "kpyg"
+          ],
+          "hit_rank": null
+        },
+        {
+          "query": "Pradhan Mantri Kaushal Vikas Yojana short term training for unemployed youth",
+          "gold": [
+            "pmkvy-rpl",
+            "pmkvy-stt",
+            "pmkvy-sp"
+          ],
+          "predicted": [
+            "sdftcw",
+            "batcs",
+            "mbkvy",
+            "sjkvy",
+            "mmpveapvkvpy"
+          ],
+          "hit_rank": null
+        },
+        {
+          "query": "Pradhan Mantri Awas Yojana urban housing subsidy for low income family",
+          "gold": [
+            "pmay-u"
+          ],
+          "predicted": [
+            "pmay-u",
+            "daay",
+            "clssmig",
+            "pmay-g",
+            "spay"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Pradhan Mantri Awas Yojana Gramin rural housing assistance",
+          "gold": [
+            "pmay-g"
+          ],
+          "predicted": [
+            "mgawb",
+            "pmay-g",
+            "pmayguk",
+            "agy-itb",
+            "aay"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "Ayushman Bharat PMJAY health insurance for poor family",
+          "gold": [
+            "ab-pmjay"
+          ],
+          "predicted": [
+            "ab-pmjay",
+            "cmhtp-crwtp-smile",
+            "himcare",
+            "mmsby",
+            "gbsy"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "crop insurance for farmers against crop loss",
+          "gold": [
+            "pmfby"
+          ],
+          "predicted": [
+            "nai",
+            "jrfry",
+            "pmfby",
+            "cisfnc",
+            "wbcism"
+          ],
+          "hit_rank": 3
+        },
+        {
+          "query": "maternity benefit for pregnant woman PMMVY",
+          "gold": [
+            "pmmvy"
+          ],
+          "predicted": [
+            "mbmbocwwb",
+            "pmmvy",
+            "mbanbocwwb",
+            "mbsapbocwwb",
+            "mbsapbandocwwb"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "free LPG connection Ujjwala for poor woman",
+          "gold": [
+            "pmuy2",
+            "pmuy"
+          ],
+          "predicted": [
+            "pmuy",
+            "wcbplpfruauk",
+            "mmgsy",
+            "sbbs",
+            "pmay-g"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "old age pension Indira Gandhi National Old Age Pension Scheme",
+          "gold": [
+            "nsap-ignoaps"
+          ],
+          "predicted": [
+            "ignoapsjak",
+            "nsap-ignoaps",
+            "igoapsm",
+            "ignoaps-sikkim",
+            "ignoapstn"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "educational assistance for children of construction worker in Maharashtra",
+          "gold": [
+            "eacs1t7a8t10"
+          ],
+          "predicted": [
+            "eacrws11a12s",
+            "rmscitc",
+            "eafmaec",
+            "eacs1t7a8t10",
+            "eafdc"
+          ],
+          "hit_rank": 4
+        },
+        {
+          "query": "Dr Panjabrao Deshmukh hostel maintenance allowance for Maharashtra student",
+          "gold": [
+            "drpdhma"
+          ],
+          "predicted": [
+            "pmavssspc",
+            "pm-usp-sssjkl",
+            "drpdhma",
+            "css-umscs",
+            "shreshta-m2-ngoos"
+          ],
+          "hit_rank": 3
+        },
+        {
+          "query": "Indira Gandhi National Widow Pension Scheme",
+          "gold": [
+            "ignwpschh",
+            "ignwpsb",
+            "ignwps-sikkim",
+            "ignwps"
+          ],
+          "predicted": [
+            "ignwpsjak",
+            "ignwpschh",
+            "ignwpsmp",
+            "ignwpsm",
+            "ignwpsp"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "Indira Gandhi National Disability Pension Scheme",
+          "gold": [
+            "igndps-sikkim",
+            "igndps"
+          ],
+          "predicted": [
+            "igndpsm",
+            "igndpstn",
+            "igndpsp",
+            "ngndpsmp",
+            "igndps"
+          ],
+          "hit_rank": 5
+        },
+        {
+          "query": "post matric scholarship for SC students",
+          "gold": [
+            "icar-pms-scstc",
+            "pmsc",
+            "pmsfssd",
+            "mpmssc"
+          ],
+          "predicted": [
+            "pmsscstb",
+            "tukpmsfst",
+            "icar-pms-scstc",
+            "pmpms",
+            "pmsfssd"
+          ],
+          "hit_rank": 3
+        },
+        {
+          "query": "post matric scholarship for OBC students",
+          "gold": [
+            "csspostmsossi",
+            "pmsoeds",
+            "pm-yasasvipmsobcebcdnts"
+          ],
+          "predicted": [
+            "pmpms",
+            "pmssb",
+            "csspremsobcsi",
+            "gbsyobc",
+            "pmsfssd"
+          ],
+          "hit_rank": null
+        },
+        {
+          "query": "National Apprenticeship Promotion Scheme training",
+          "gold": [
+            "nsat",
+            "naps"
+          ],
+          "predicted": [
+            "naps",
+            "mayg",
+            "ads",
+            "cts-msde",
+            "iitpes"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Kisan Credit Card for farmers",
+          "gold": [
+            "kccp",
+            "kcc"
+          ],
+          "predicted": [
+            "cmkry",
+            "kccp",
+            "kccsf-cmfps",
+            "tpahkcc",
+            "fafiskc"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "Swachh Bharat Mission Grameen rural sanitation toilet",
+          "gold": [
+            "sbm-g-ii",
+            "sbm-g-i",
+            "sbmgwmuk"
+          ],
+          "predicted": [
+            "sbm-g-ii",
+            "sbm-g-i",
+            "sbmgwmuk",
+            "ssyup",
+            "hpmvssp"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Pension scheme for women in distress widow Delhi",
+          "gold": [
+            "dpswdwp"
+          ],
+          "predicted": [
+            "sssps",
+            "dpswdwp",
+            "ignwps",
+            "fawdsddaw",
+            "dpcw"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "Mukhyamantri Apprenticeship Yojana for youth",
+          "gold": [
+            "mayg"
+          ],
+          "predicted": [
+            "mayg",
+            "naps",
+            "mkuevry",
+            "myuyb",
+            "mmpveapvkvpy"
+          ],
+          "hit_rank": 1
+        }
+      ]
+    },
+    {
+      "method": "hybrid_rerank",
+      "n": 20,
+      "Recall@5": 0.9,
+      "MRR": 0.8,
+      "Avg latency (ms)": 1284.57,
+      "per_query": [
+        {
+          "query": "PM Kisan Samman Nidhi income support for small farmer",
+          "gold": [
+            "pm-kisan"
+          ],
+          "predicted": [
+            "pm-kisan",
+            "pmkmdy",
+            "pmmvy",
+            "pm-mkssy-1a",
+            "ksyj"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Pradhan Mantri Kaushal Vikas Yojana short term training for unemployed youth",
+          "gold": [
+            "pmkvy-rpl",
+            "pmkvy-stt",
+            "pmkvy-sp"
+          ],
+          "predicted": [
+            "pmkvy-stt",
+            "mmpyj",
+            "mbkvy",
+            "mmpveapvkvpy",
+            "pmkvy-sp"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Pradhan Mantri Awas Yojana urban housing subsidy for low income family",
+          "gold": [
+            "pmay-u"
+          ],
+          "predicted": [
+            "pmay-u",
+            "ab-pmjay",
+            "pmay-g",
+            "gtachcw",
+            "spay"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Pradhan Mantri Awas Yojana Gramin rural housing assistance",
+          "gold": [
+            "pmay-g"
+          ],
+          "predicted": [
+            "pmay-g",
+            "pmayguk",
+            "mgawb",
+            "mmvsksy",
+            "agy-itb"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Ayushman Bharat PMJAY health insurance for poor family",
+          "gold": [
+            "ab-pmjay"
+          ],
+          "predicted": [
+            "ab-pmjay",
+            "mmsby",
+            "maayr",
+            "himcare",
+            "cmhtp-crwtp-smile"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "crop insurance for farmers against crop loss",
+          "gold": [
+            "pmfby"
+          ],
+          "predicted": [
+            "pmfby",
+            "nai",
+            "wbcism",
+            "jrfry",
+            "cisfnc"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "maternity benefit for pregnant woman PMMVY",
+          "gold": [
+            "pmmvy"
+          ],
+          "predicted": [
+            "pmmvy",
+            "mbffwjkbocwwb",
+            "mbfwb",
+            "mbttfb",
+            "mbsapbocwwb"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "free LPG connection Ujjwala for poor woman",
+          "gold": [
+            "pmuy2",
+            "pmuy"
+          ],
+          "predicted": [
+            "pmuy",
+            "mmgsy",
+            "wcbplpfruauk",
+            "dugjy",
+            "zvy"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "old age pension Indira Gandhi National Old Age Pension Scheme",
+          "gold": [
+            "nsap-ignoaps"
+          ],
+          "predicted": [
+            "ignoapsjak",
+            "ignoaps-sikkim",
+            "ignoapsb",
+            "igoapsm",
+            "ignoapsch"
+          ],
+          "hit_rank": null
+        },
+        {
+          "query": "educational assistance for children of construction worker in Maharashtra",
+          "gold": [
+            "eacs1t7a8t10"
+          ],
+          "predicted": [
+            "eacrws11a12s",
+            "eafdc",
+            "eafmaec",
+            "eacs1t7a8t10",
+            "eatt10t12s"
+          ],
+          "hit_rank": 4
+        },
+        {
+          "query": "Dr Panjabrao Deshmukh hostel maintenance allowance for Maharashtra student",
+          "gold": [
+            "drpdhma"
+          ],
+          "predicted": [
+            "drpdhma",
+            "pmavssspc",
+            "mabcstss",
+            "pmscteoicphh",
+            "pmsssc"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Indira Gandhi National Widow Pension Scheme",
+          "gold": [
+            "ignwpschh",
+            "ignwpsb",
+            "ignwps-sikkim",
+            "ignwps"
+          ],
+          "predicted": [
+            "ignwpstn",
+            "ignwpsm",
+            "ignwpsjak",
+            "ignwps-sikkim",
+            "ignwpschh"
+          ],
+          "hit_rank": 4
+        },
+        {
+          "query": "Indira Gandhi National Disability Pension Scheme",
+          "gold": [
+            "igndps-sikkim",
+            "igndps"
+          ],
+          "predicted": [
+            "igndpstn",
+            "igndpschh",
+            "igndpsm",
+            "igndpsb",
+            "igndpsp"
+          ],
+          "hit_rank": null
+        },
+        {
+          "query": "post matric scholarship for SC students",
+          "gold": [
+            "icar-pms-scstc",
+            "pmsc",
+            "pmsfssd",
+            "mpmssc"
+          ],
+          "predicted": [
+            "pmsfssd",
+            "pmsfss",
+            "pmsscstb",
+            "pmsscs-g",
+            "pmsc"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "post matric scholarship for OBC students",
+          "gold": [
+            "csspostmsossi",
+            "pmsoeds",
+            "pm-yasasvipmsobcebcdnts"
+          ],
+          "predicted": [
+            "pmsfssd",
+            "pm-yasasvipmsobcebcdnts",
+            "pmssb",
+            "pmsoeds",
+            "pms"
+          ],
+          "hit_rank": 2
+        },
+        {
+          "query": "National Apprenticeship Promotion Scheme training",
+          "gold": [
+            "nsat",
+            "naps"
+          ],
+          "predicted": [
+            "naps",
+            "mayg",
+            "cts-msde",
+            "ipsaeusd",
+            "lstsmpbocwwb"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Kisan Credit Card for farmers",
+          "gold": [
+            "kccp",
+            "kcc"
+          ],
+          "predicted": [
+            "kcc",
+            "kccp",
+            "fafiskc",
+            "cmkry",
+            "tpahkcc"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Swachh Bharat Mission Grameen rural sanitation toilet",
+          "gold": [
+            "sbm-g-ii",
+            "sbm-g-i",
+            "sbmgwmuk"
+          ],
+          "predicted": [
+            "sbmgwmuk",
+            "sbm-g-i",
+            "hpmvssp",
+            "sbm-g-ii",
+            "gobardhan"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Pension scheme for women in distress widow Delhi",
+          "gold": [
+            "dpswdwp"
+          ],
+          "predicted": [
+            "dpswdwp",
+            "fawdsddaw",
+            "ignwps",
+            "fpdbocwwb",
+            "famdpwog"
+          ],
+          "hit_rank": 1
+        },
+        {
+          "query": "Mukhyamantri Apprenticeship Yojana for youth",
+          "gold": [
+            "mayg"
+          ],
+          "predicted": [
+            "mayg",
+            "mkuevry",
+            "myay-mp",
+            "mmsky",
+            "mmpveapvkvpy"
+          ],
+          "hit_rank": 1
+        }
+      ]
+    }
+  ]
+}

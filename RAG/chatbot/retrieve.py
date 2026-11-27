@@ -12,6 +12,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from rank_bm25 import BM25Okapi
 
 from chatbot.ingest import tokenize_for_bm25
+from chatbot.rule_engine import apply_rule_engine
 
 
 DEFAULT_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
@@ -434,6 +435,7 @@ def retrieve_hybrid(
     faiss_top_k: int = 50,
     bm25_top_k: int = 50,
     max_schemes: int = 5,
+    profile_for_rules: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     candidate_indices = filter_candidate_indices(
         chunks=artifacts.chunks,
@@ -483,6 +485,15 @@ def retrieve_hybrid(
     ranked_schemes = aggregate_by_scheme(
         artifacts.chunks, fused_scores, max_schemes=max_schemes
     )
+
+    if profile_for_rules is not None:
+        scheme_meta_lookup: Dict[str, Dict[str, Any]] = {}
+        for ch in artifacts.chunks:
+            sid = ch.get("scheme_id")
+            if sid and sid not in scheme_meta_lookup:
+                scheme_meta_lookup[sid] = ch
+        ranked_schemes = apply_rule_engine(profile_for_rules, ranked_schemes, scheme_meta_lookup)
+
     context_chunks = _build_context_chunks(artifacts.chunks, fused_scores, max_chunks=8)
 
     meta["vector_hits"] = len(vector_hits)

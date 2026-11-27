@@ -1,0 +1,20 @@
+{"query": "PM Kisan Samman Nidhi income support for small farmer", "occupation": "agriculture", "age": 40, "income": 200000, "relevant_scheme_ids": ["pm-kisan"]}
+{"query": "Pradhan Mantri Kaushal Vikas Yojana short term training for unemployed youth", "occupation": "unemployed", "age": 22, "relevant_scheme_ids": ["pmkvy-stt", "pmkvy-rpl", "pmkvy-sp"]}
+{"query": "Pradhan Mantri Awas Yojana urban housing subsidy for low income family", "residency": "urban", "income": 400000, "relevant_scheme_ids": ["pmay-u"]}
+{"query": "Pradhan Mantri Awas Yojana Gramin rural housing assistance", "residency": "rural", "income": 200000, "relevant_scheme_ids": ["pmay-g"]}
+{"query": "Ayushman Bharat PMJAY health insurance for poor family", "income": 200000, "relevant_scheme_ids": ["ab-pmjay"]}
+{"query": "crop insurance for farmers against crop loss", "occupation": "agriculture", "relevant_scheme_ids": ["pmfby"]}
+{"query": "maternity benefit for pregnant woman PMMVY", "gender": "female", "age": 25, "relevant_scheme_ids": ["pmmvy"]}
+{"query": "free LPG connection Ujjwala for poor woman", "gender": "female", "income": 150000, "caste": "bpl", "relevant_scheme_ids": ["pmuy", "pmuy2"]}
+{"query": "old age pension Indira Gandhi National Old Age Pension Scheme", "age": 70, "income": 100000, "relevant_scheme_ids": ["nsap-ignoaps"]}
+{"query": "educational assistance for children of construction worker in Maharashtra", "state": "Maharashtra", "occupation": "private", "relevant_scheme_ids": ["eacs1t7a8t10"]}
+{"query": "Dr Panjabrao Deshmukh hostel maintenance allowance for Maharashtra student", "state": "Maharashtra", "occupation": "student", "income": 500000, "relevant_scheme_ids": ["drpdhma"]}
+{"query": "Indira Gandhi National Widow Pension Scheme", "gender": "female", "age": 45, "relevant_scheme_ids": ["ignwps", "ignwps-sikkim", "ignwpsb", "ignwpschh"]}
+{"query": "Indira Gandhi National Disability Pension Scheme", "age": 30, "relevant_scheme_ids": ["igndps", "igndps-sikkim"]}
+{"query": "post matric scholarship for SC students", "caste": "sc", "occupation": "student", "income": 250000, "relevant_scheme_ids": ["pmsfssd", "pmsc", "icar-pms-scstc", "mpmssc"]}
+{"query": "post matric scholarship for OBC students", "caste": "obc", "occupation": "student", "income": 250000, "relevant_scheme_ids": ["csspostmsossi", "pm-yasasvipmsobcebcdnts", "pmsoeds"]}
+{"query": "National Apprenticeship Promotion Scheme training", "occupation": "student", "age": 20, "relevant_scheme_ids": ["naps", "nsat"]}
+{"query": "Kisan Credit Card for farmers", "occupation": "agriculture", "relevant_scheme_ids": ["kcc", "kccp"]}
+{"query": "Swachh Bharat Mission Grameen rural sanitation toilet", "residency": "rural", "relevant_scheme_ids": ["sbm-g-i", "sbm-g-ii", "sbmgwmuk"]}
+{"query": "Pension scheme for women in distress widow Delhi", "state": "Delhi", "gender": "female", "age": 40, "relevant_scheme_ids": ["dpswdwp"]}
+{"query": "Mukhyamantri Apprenticeship Yojana for youth", "occupation": "unemployed", "age": 22, "relevant_scheme_ids": ["mayg"]}

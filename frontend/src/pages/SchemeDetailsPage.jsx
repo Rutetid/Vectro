@@ -93,12 +93,12 @@ const SchemeDetailsPage = ({ language, setLanguage }) => {
                   <span className="inline-flex items-center rounded-full border border-emerald-400/20 bg-emerald-400/8 px-2 py-1 text-sm font-medium text-emerald-50/80 sm:px-3">
                     {schemeFromState.category || 'General'}
                   </span>
-                  {schemeFromState.relevanceScore && (
+                  {/* {schemeFromState.relevanceScore && (
                     <div className="flex items-center gap-1 text-xs text-emerald-50/45 sm:text-sm">
                       <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-400/80" />
                       <span>{((1 - schemeFromState.relevanceScore) * 100).toFixed(0)}% Match</span>
                     </div>
-                  )}
+                  )} */}
                 </div>
                 <h1 className="mb-2 text-xl font-semibold text-white sm:text-2xl md:text-3xl">
                   {schemeFromState.name}

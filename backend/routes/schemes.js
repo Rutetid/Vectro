@@ -43,6 +43,9 @@ router.post('/chat', optionalAuth, async (req, res) => {
       officialWebsite: (scheme.citations && scheme.citations[0]?.source_url) || '',
       matchedSections: scheme.matched_sections || [],
       citations: scheme.citations || [],
+      eligibilityStatus: scheme.eligibility_status || null,
+      eligibilityReasons: scheme.eligibility_reasons || [],
+      eligibilityUnknowns: scheme.eligibility_unknowns || [],
     }));
 
     res.json({
@@ -52,6 +55,9 @@ router.post('/chat', optionalAuth, async (req, res) => {
       query: ragData.query || '',
       meta: ragData.meta || {},
       message: ragData.message || String(message).trim(),
+      extractedProfile: ragData.extracted_profile || null,
+      missingFields: ragData.missing_fields || [],
+      extractionSource: ragData.extraction_source || null,
     });
   } catch (error) {
     console.error('Chat error:', error.message);
@@ -138,6 +144,9 @@ router.post('/discover', optionalAuth, async (req, res) => {
       officialWebsite: (scheme.citations && scheme.citations[0]?.source_url) || '',
       matchedSections: scheme.matched_sections || [],
       citations: scheme.citations || [],
+      eligibilityStatus: scheme.eligibility_status || null,
+      eligibilityReasons: scheme.eligibility_reasons || [],
+      eligibilityUnknowns: scheme.eligibility_unknowns || [],
     }));
 
     // If user is authenticated, optionally save the search
